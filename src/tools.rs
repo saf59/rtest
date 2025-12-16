@@ -1,4 +1,4 @@
-struct Image {
+pub struct Image {
     url: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     storage_path: Option<String>,
@@ -72,7 +72,14 @@ impl Tool for ImageFinder {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let result = args.query;
+        let result = Image {
+            url: "./data/image.jpg".to_string(),
+            storage_path: None,
+            size: None,
+            mime_type: None,
+            hash: None,
+            description: None,
+        };
         Ok(result)
     }
 }
