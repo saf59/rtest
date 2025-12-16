@@ -1,15 +1,27 @@
 use rig::client::Nothing;
 use rig::providers::ollama;
-
+// visual
+// tool
+// 0..1 thinking: Qwen, DeepSeek
 pub const LOCAL_MODELS: &[&str] = &[
     "qwen3-vl:235b-cloud",
-    "qwen3-coder:480b-cloud",
     "deepseek-v3.1:671b-cloud",
+    "deepseek-r1",
+    // small models: < 7.8G
     "llava",
     "llama3.2-vision",
-    "deepseek-r1",
 ];
-pub const REMOTE_MODELS: &[&str] = &["llava", "llama3.2-vision"];
+// 0..2 thinking: Qwen, DeepSeek
+pub const REMOTE_MODELS: &[&str] = &[
+    "qwen3:14b",
+    "qwen3-vl",
+    "deepseek-r1:14b",
+    "ministral-3:14b",
+    "gemma3:12b",
+    "minicpm-v:8b",
+    "llava",
+    "llama3.2-vision",
+];
 
 pub fn client(is_local: bool) -> ollama::Client {
     if is_local {
