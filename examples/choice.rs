@@ -1,13 +1,19 @@
 use rig::{client::CompletionClient, completion::Prompt};
 use rig_test::helper::*;
+use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let msg = "Who are you?";
-    let prompt = "Describe yourself";
+    let msg = r#"I need your help with three types of tasks!
+    1. Understanding what's in the image.
+    2. Working with tools.
+    3. Thinking."#;
+    let prompt = "Which of these tasks are you suitable for?";
     let model = REMOTE_MODELS[0];
     let preamble = preamble(msg);
+    let start = Instant::now();
     let _ = run_agent(&preamble, prompt, model, false).await?;
+    println!("Time elapsed: {:?}", start.elapsed());
     Ok(())
 }
 
@@ -39,10 +45,7 @@ fn preamble(message: &str) -> String {
     format!(
         r#"
         You are a helpful assistant.
-
         User message: {}
-
-        Answer!
         "#,
         message
     )

@@ -14,6 +14,14 @@ use tokio::fs;
 
 const IMAGE_FILE_PATH: &str = "./data/image.jpg";
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct Description {
+    description: String,
+    windows: String,
+    doors: String,
+    radiators: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     // Tracing
