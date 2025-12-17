@@ -1,4 +1,5 @@
 use std::io::Cursor;
+use std::time::Instant;
 
 use base64::{Engine, prelude::BASE64_STANDARD};
 use image::{GenericImageView, ImageFormat};
@@ -36,7 +37,7 @@ async fn main() -> Result<(), anyhow::Error> {
         "format": "json"
     });
     let is_local = false;
-    let model = REMOTE_MODELS[7];
+    let model = REMOTE_MODELS[5];
     if !check_model(model, is_local) {
         return Err(anyhow::anyhow!(
             "Model not found: {}, is_local: {}",
