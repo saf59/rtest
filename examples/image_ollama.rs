@@ -3,10 +3,8 @@ use std::time::Instant;
 
 use base64::{Engine, prelude::BASE64_STANDARD};
 use image::{GenericImageView, ImageFormat};
-use rig::client::Nothing;
 use rig::message::DocumentSourceKind;
 use rig::prelude::*;
-use rig::providers::ollama;
 use rig::{
     completion::{Prompt, message::Image},
     message::ImageMediaType,
@@ -95,6 +93,7 @@ Response format (JSON only, no other text):
     let response = agent.prompt(image).await?;
 
     println!("{response}");
+    println!("Time elapsed: {:?}", start.elapsed());
 
     Ok(())
 }
@@ -124,7 +123,6 @@ fn resize_image_to_bytes(
 
     // Encode as JPEG. You can change this to PNG, GIF, etc., as needed
     resized_img.write_to(&mut cursor, ImageFormat::Jpeg)?;
-    println!("Time elapsed: {:?}", start.elapsed());
     // The 'bytes' vector now contains the image data
     Ok(bytes)
 }
