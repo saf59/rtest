@@ -53,13 +53,13 @@ I'm DeepSeek-R1, created by DeepSeek. For more information about models and prod
 **I’m highly suitable for all three tasks! Here’s how I can help with each:**
 
 1. **Understanding what's in the image**
-   - *What I can do*: I can’t *see* images directly, but you can **describe them to me** (e.g., colors, objects, text, layouts), and I’ll analyze, interpret, or explain them in detail.
+   - *What I can do*: **I can’t** *see* images directly, but you can **describe them to me** (e.g., colors, objects, text, layouts), and I’ll analyze, interpret, or explain them in detail.
      - Example: *"What does this diagram of a circuit show?"* → I’ll break down components, functions, or even compare it to known schematics.
      - Example: *"What’s the mood of this painting?"* → I’ll describe techniques, symbolism, or historical context.
    - *Limitations*: I need **your input** (text descriptions) to work with images. For OCR (text in images), I can guide you on tools like *Tesseract* or *Google Lens*.
 
 2. **Working with tools**
-   - *What I can do*: I can’t *use* tools directly, but I can:
+   - *What I can do*: **I can’t** *use* tools directly, but I can:
      - **Guide you** on how to use them (e.g., Python libraries like `Pillow` for images, `Pandas` for data, or APIs like OpenWeatherMap).
      - **Write code/snippets** to process images, automate tasks, or integrate tools (e.g., Python scripts to extract text from images).
      - **Recommend tools** for your needs (e.g., *Canva* for design, *Notion* for organization).

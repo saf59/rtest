@@ -10,6 +10,7 @@ use rig::{
     completion::{Prompt, message::Image},
     message::ImageMediaType,
 };
+use rig_test::helper::*;
 use tokio::fs;
 
 const IMAGE_FILE_PATH: &str = "./data/image.jpg";
@@ -24,6 +25,7 @@ struct Description {
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    let start = Instant::now();
     // Tracing
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
@@ -33,10 +35,16 @@ async fn main() -> Result<(), anyhow::Error> {
     let json = serde_json::json!({
         "format": "json"
     });
-
-    // Create ollama client
-    let client: ollama::Client = ollama::Client::new(Nothing).unwrap();
-    //ollama::Client::builder() .api_key(Nothing) .base_url("http://localhost:8050") .build() .unwrap();
+    let is_local = false;
+    let model = REMOTE_MODELS[7];
+    if !check_model(model, is_local) {
+        return Err(anyhow::anyhow!(
+            "Model not found: {}, is_local: {}",
+            model,
+            is_local
+        ));
+    }
+    let client = client(is_local);
 
     //let language = "English";
     //let language = "German";
@@ -63,7 +71,7 @@ Response format (JSON only, no other text):
 
     // Create agent with a single context prompt
     let agent = client
-        .agent("qwen3-vl:235b-cloud")
+        .agent(model)
         // .agent("llama3.2-vision")
         .additional_params(json)
         .preamble(&prompt)
@@ -115,7 +123,7 @@ fn resize_image_to_bytes(
 
     // Encode as JPEG. You can change this to PNG, GIF, etc., as needed
     resized_img.write_to(&mut cursor, ImageFormat::Jpeg)?;
-
+    println!("Time elapsed: {:?}", start.elapsed());
     // The 'bytes' vector now contains the image data
     Ok(bytes)
 }
