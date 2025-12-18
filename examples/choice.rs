@@ -9,7 +9,7 @@ async fn main() -> Result<(), anyhow::Error> {
     2. Working with tools.
     3. Thinking."#;
     let prompt = "Which of these tasks are you suitable for?";
-    let model = REMOTE_MODELS[7];
+    let model = REMOTE_MODELS[2];
     let preamble = preamble(msg);
     let start = Instant::now();
     let _ = run_agent(&preamble, prompt, model, false).await?;
