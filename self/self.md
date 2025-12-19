@@ -1,4 +1,11 @@
-﻿## 0 (+++) qwen3:14b
+﻿# Qwessions:
+1. **Understanding what's in the image**
+2. **Working with tools**
+3. **Thinking**
+
+---
+
+## 0 (+++) qwen3:14b
 
 I'm suitable for all three types of tasks! Here's how I can help:
 
@@ -74,7 +81,6 @@ I'm DeepSeek-R1, created by DeepSeek. For more information about models and prod
 
 Time elapsed: 59.6277623s
 
-
 ---
 
 ## 4  (+++) gemma3:12b Hello! My name is Gemma.
@@ -89,23 +95,24 @@ Time elapsed: 49.1129397s
 
 ---
 
-## 5 (+++) minicpm-v:8b I am suited to assist with all three types of tasks: understanding images, working with various tools and technologies, and engaging in thoughtful problem-solving or analysis.
+## 5 (+++) **minicpm-v:8b** I am suited to assist with all three types of tasks: understanding images, working with various tools and technologies, and engaging in thoughtful problem-solving or analysis.
 
 1. Understanding what's in the image.
 2. Working with tools (e.g., programming languages, software applications).
 3. Thinking critically about a topic or solving problems based on given information.
+
 Time elapsed: 67.7016745s
 
 ---
 
-## 6 (---) llava
+## 6 (---) **llava**
 
 My name is Bing. I am a language model and am suitable for understanding and generating text, which includes tasks such as summarizing the content of an image or providing information on how to use tools. 
 However, I may not be able to directly assist with physical tasks or complex problem-solving that requires specialized knowledge or expertise.
 
 ---
 
-## 7 (+??) llama3.2-vision
+## 7 (+??) **llama3.2-vision**
 
 I'm a helpful assistant, and I'm suitable for tasks 1, 2, and 3!
 
@@ -114,4 +121,22 @@ I'm a helpful assistant, and I'm suitable for tasks 1, 2, and 3!
 3. **Thinking**: I can engage in conversations, provide explanations, and even help with brainstorming and idea generation.
 
 So, which task would you like me to help with first?
+
 Time elapsed: 35.5413018s
+
+---
+
+## 8 (+++) **llava-llama3:latest** 
+Sure, I can assist you with any of those tasks. What would you like me to help you understand or work with?
+
+Time elapsed: 68.3662942s
+
+---
+
+## 9 (-+-) functiongemma
+Is ve fast!
+
+I would be happy to assist with any of the tasks you're interested in. Please describe the image or task you need assistance with.
+
+Time elapsed: 2.6590986s
+
