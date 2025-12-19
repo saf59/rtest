@@ -11,7 +11,7 @@ pub struct Image {
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
 }
-#[derive(Debug, anyhow::Error)]
+#[derive(Debug, thiserror::Error)]
 #[error("Math error")]
 struct MathError;
 

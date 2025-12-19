@@ -11,8 +11,8 @@ struct OperationArgs {
     y: i32,
 }
 
-//#[derive(Debug, thiserror::Error)]
-//#[error("Math error")]
+#[derive(Debug, thiserror::Error)]
+#[error("Math error")]
 struct MathError;
 
 #[derive(Deserialize, Serialize)]

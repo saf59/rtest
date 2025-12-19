@@ -1728,6 +1728,7 @@ dependencies = [
  "rig-core",
  "serde",
  "serde_json",
+ "thiserror",
  "tokio",
  "tracing",
  "tracing-subscriber",
