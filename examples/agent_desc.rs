@@ -1,13 +1,8 @@
 use rig::client::Nothing;
-use rig::prelude::*;
 use rig::completion::Prompt;
+use rig::prelude::*;
 use rig::providers::ollama;
-use rig::{
-    providers::ollama::Client,
-    tool::Tool,
-};
-use rig::completion::CompletionModel;
-use rig::pipeline::Op;
+use rig::providers::ollama::Client;
 use serde::{Deserialize, Serialize};
 
 // Структуры данных
@@ -64,7 +59,10 @@ fn read_image(id: &str) -> Result<Image, anyhow::Error> {
 
 fn update_image(id: &str, description: String) -> Result<(), anyhow::Error> {
     // Имитация обновления в БД
-    println!("💾 Updating image {} with description : {:#?}", id, description);
+    println!(
+        "💾 Updating image {} with description : {:#?}",
+        id, description
+    );
 
     // Симуляция возможной ошибки
     if id == "error" {
@@ -83,7 +81,7 @@ struct ImageDescriptionAgent {
 
 impl ImageDescriptionAgent {
     fn new(model: &str) -> Self {
-        let client:ollama::Client = ollama::Client::builder()
+        let client: ollama::Client = ollama::Client::builder()
             .api_key(Nothing)
             .base_url("http://localhost:8050")
             .build()
@@ -115,45 +113,44 @@ Respond ONLY with valid JSON, no additional text."#,
             image_url
         );
 
-/*        let completion_model = self.client.completion_model(&self.model);
-        let completion_request = completion_model
-            .completion_request(&prompt)
-            .preamble("You are a helpful AI assistant. Provide concise explanations.".to_string())
-            .temperature(0.2)
-            .build();
+        /*        let completion_model = self.client.completion_model(&self.model);
+                let completion_request = completion_model
+                    .completion_request(&prompt)
+                    .preamble("You are a helpful AI assistant. Provide concise explanations.".to_string())
+                    .temperature(0.2)
+                    .build();
 
 
-        let response = completion_model.completion(completion_request).await?;
-*/
-        let agent = self.client.agent(&self.model)
+                let response = completion_model.completion(completion_request).await?;
+        */
+        let agent = self
+            .client
+            .agent(&self.model)
             .preamble("You are a helpful AI assistant.")
             //.temperature(0.2)
             .build();
-        let response:String = agent.prompt(&prompt).await?;
+        let response: String = agent.prompt(&prompt).await?;
 
         // Парсинг JSON ответа
-        let json_str =  response.trim();
+        let json_str = response.trim();
         let description: ImageDescription = serde_json::from_str(json_str).unwrap();
-/*            or_else(|_| {
-            // Попытка извлечь JSON из текста
-            if let Some(start) = json_str.find('{') {
-                if let Some(end) = json_str.rfind('}') {
-                    let json_part = &json_str[start..=end];
-                    return serde_json::from_str(json_part);
-                }
-            }
-            Err(anyhow::anyhow!("Failed to parse JSON"));
-        })?;
-*/
+        /*            or_else(|_| {
+                    // Попытка извлечь JSON из текста
+                    if let Some(start) = json_str.find('{') {
+                        if let Some(end) = json_str.rfind('}') {
+                            let json_part = &json_str[start..=end];
+                            return serde_json::from_str(json_part);
+                        }
+                    }
+                    Err(anyhow::anyhow!("Failed to parse JSON"));
+                })?;
+        */
         Ok(description)
     }
 
-    async fn process_image(
-        &self,
-        image_id: &str,
-    ) -> Result<ImageDescriptionResult, anyhow::Error> {
+    async fn process_image(&self, image_id: &str) -> Result<ImageDescriptionResult, anyhow::Error> {
         // Читаем изображение
-        let mut image = read_image(image_id)?;
+        let image = read_image(image_id)?;
 
         // Проверяем наличие описания
         let description = if let Some(existing_desc) = &image.description {
@@ -209,7 +206,7 @@ async fn main() -> Result<(), anyhow::Error> {
     println!("🚀 Starting Image Description Agent\n");
 
     // Создаем агента
-    let agent = ImageDescriptionAgent::new( "qwen3:14b");
+    let agent = ImageDescriptionAgent::new("qwen3:14b");
 
     // Пример запроса
     let req_data = ReqData {
