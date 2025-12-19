@@ -10,6 +10,7 @@ pub const LOCAL_MODELS: &[&str] = &[
     // small models: < 7.8G
     "llava",
     "llama3.2-vision",
+    "functiongemma",
 ];
 // 0..2 thinking: Qwen, DeepSeek
 pub const REMOTE_MODELS: &[&str] = &[
@@ -21,6 +22,8 @@ pub const REMOTE_MODELS: &[&str] = &[
     "minicpm-v:8b",
     "llava",
     "llama3.2-vision",
+    "llava-llama3:latest",
+    "functiongemma",
 ];
 
 pub fn client(is_local: bool) -> ollama::Client {

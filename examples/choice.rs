@@ -7,7 +7,8 @@ use std::time::Instant;
 async fn main() -> Result<(), anyhow::Error> {
     let text_manager = TextManager::new();
     let lang = "en";
-    let model = REMOTE_MODELS[6];
+    let model = REMOTE_MODELS[9];
+    //let model = LOCAL_MODELS[5];
     let is_local = false;
     let msg = text_manager.get_msg(lang, "three-qwestions");
     let prompt = text_manager.get_msg(lang, "which-task-for-you");
