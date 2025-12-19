@@ -5,7 +5,11 @@ use unic_langid::LanguageIdentifier;
 pub struct TextManager {
     bundles: HashMap<String, FluentBundle<FluentResource>>,
 }
-
+impl Default for TextManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl TextManager {
     pub fn new() -> Self {
         let mut bundles = HashMap::new();
@@ -69,7 +73,8 @@ impl TextManager {
 
         let msg = bundle
             .get_message(msg_id)
-            .expect(&format!("Message '{}' not found in FTL", msg_id));
+            .unwrap_or_else(|| panic!("Message '{}' not found in FTL", msg_id));
+        //.expect(&format!("Message '{}' not found in FTL", msg_id));
 
         let pattern = msg.value().expect("Message value is empty");
         let mut errors = vec![];

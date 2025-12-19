@@ -11,6 +11,9 @@ pub struct Image {
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
 }
+#[derive(Debug, anyhow::Error)]
+#[error("Math error")]
+struct MathError;
 
 // делаем tool Descriptor
 #[derive(Deserialize, Serialize)]
@@ -18,7 +21,7 @@ struct Descriptor;
 
 impl Tool for Descriptor {
     const NAME: &'static str = "descriptor";
-    //type Error = MathError;
+    type Error = MathError;
     type Args = OperationArgs;
     type Output = String;
 
