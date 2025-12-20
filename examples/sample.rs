@@ -1,4 +1,4 @@
-use rig::completion::Prompt;
+use rig::completion::{Prompt,ToolDefinition};
 use rig::providers::ollama;
 use rig::tool::Tool;
 use rig_test::helper::*;
@@ -6,13 +6,27 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
 use std::sync::Arc;
+use rig::client::CompletionClient;
 use tokio::sync::RwLock;
 use tokio::sync::mpsc;
 use uuid::Uuid;
+use std::error::Error as StdError;
 
 const IS_LOCAL: bool = false;
 
-// ============================================================================
+#[derive(Debug, thiserror::Error)]
+#[error("App error")]
+pub struct AppError;
+
+impl From<Box<dyn StdError + Send + Sync + 'static>> for AppError {
+    #[inline(always)]
+    fn from(b: Box<dyn StdError + Send + Sync + 'static>) -> Self {
+        //b // both sides are the same type
+        b.into()
+    }
+}
+
+/// ============================================================================
 // ТИПЫ СОБЫТИЙ ДЛЯ STREAMING
 // ============================================================================
 
@@ -197,7 +211,7 @@ pub struct AgentContext {
 impl AgentContext {
     pub fn from_request(req: AgentRequest, cancellation_token: CancellationToken) -> Self {
         Self {
-            request_id: Uuid::new_v7().to_string(),
+            request_id: Uuid::now_v7().to_string(),
             user_id: req.user_id,
             chat_id: req.chat_id,
             object_id: req.object_id,
@@ -245,12 +259,12 @@ impl ChatToolStreaming {
 impl Tool for ChatToolStreaming {
     const NAME: &'static str = "chat_tool";
 
-    type Error = Box<dyn std::error::Error + Send + Sync>;
+    type Error = AppError;
     type Args = ChatToolInput;
     type Output = String;
 
-    async fn definition(&self, _prompt: String) -> rig::tool::ToolDefinition {
-        rig::tool::ToolDefinition {
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
+        ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Handle chat conversations with streaming support.".to_string(),
             parameters: json!({
@@ -337,12 +351,12 @@ impl TaskToolStreaming {
 impl Tool for TaskToolStreaming {
     const NAME: &'static str = "task_tool";
 
-    type Error = Box<dyn std::error::Error + Send + Sync>;
+    type Error = AppError;
     type Args = TaskToolInput;
     type Output = String;
 
-    async fn definition(&self, _prompt: String) -> rig::tool::ToolDefinition {
-        rig::tool::ToolDefinition {
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
+        ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Manage tasks with streaming progress updates.".to_string(),
             parameters: json!({
@@ -433,12 +447,12 @@ impl ObjectToolStreaming {
 impl Tool for ObjectToolStreaming {
     const NAME: &'static str = "object_tool";
 
-    type Error = Box<dyn std::error::Error + Send + Sync>;
+    type Error = AppError;
     type Args = ObjectToolInput;
     type Output = String;
 
-    async fn definition(&self, _prompt: String) -> rig::tool::ToolDefinition {
-        rig::tool::ToolDefinition {
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
+        ToolDefinition {
             name: Self::NAME.to_string(),
             description: "Edit objects with streaming updates.".to_string(),
             parameters: json!({
@@ -876,7 +890,7 @@ pub struct MasterAgentStreaming {
 }
 
 impl MasterAgentStreaming {
-    pub fn new(api_key: String) -> Self {
+    pub fn new() -> Self {
         let client = client(IS_LOCAL);
         Self {
             client,
@@ -894,7 +908,7 @@ impl MasterAgentStreaming {
         let request_manager = self.request_manager.clone();
 
         tokio::spawn(async move {
-            let cancellation_token = request_manager.register(Uuid::new_v4().to_string()).await;
+            let cancellation_token = request_manager.register(Uuid::now_v7().to_string()).await;
             let context = AgentContext::from_request(request.clone(), cancellation_token.clone());
             let request_id = context.request_id.clone();
 
@@ -1337,7 +1351,7 @@ mod client_example {
     #[tokio::test]
     async fn test_cancellation() {
         let client = client(IS_LOCAL);
-        let (tx, mut rx) = mpsc::channel(100);
+        let (tx, rx) = mpsc::channel(100);
         let cancellation_token = CancellationToken::new();
         let cancel_handle = cancellation_token.clone();
 
@@ -1370,3 +1384,5 @@ mod client_example {
         assert!(result.unwrap_err().to_string().contains("cancelled"));
     }
 }
+
+fn main() {}
