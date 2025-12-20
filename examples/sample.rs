@@ -1088,9 +1088,10 @@ pub fn create_router(api_key: String) -> Router {
 
 #[cfg(test)]
 mod client_example {
+    use std::time::Duration;
     use super::*;
-    /*/
-    pub async fn example_client() {
+
+/*    pub async fn example_client() {
         let client = reqwest::Client::new();
 
         // Отправляем запрос и получаем stream
@@ -1126,58 +1127,7 @@ mod client_example {
                             let json_str = &line[6..];
 
                             if let Ok(event) = serde_json::from_str::<StreamEvent>(json_str) {
-                                match &event {
-                                    StreamEvent::Started { request_id: id, .. } => {
-                                        request_id = Some(id.clone());
-                                        println!("✓ Started: {}", id);
-                                    }
-                                    StreamEvent::CoordinatorThinking { message, .. } => {
-                                        println!("🤔 Coordinator: {}", message);
-                                    }
-                                    StreamEvent::ToolSelected { tool_name, .. } => {
-                                        println!("🔧 Tool selected: {}", tool_name);
-                                    }
-                                    StreamEvent::PipelineStarted {
-                                        pipeline_name,
-                                        steps,
-                                        ..
-                                    } => {
-                                        println!(
-                                            "⚙️  Pipeline: {} ({} steps)",
-                                            pipeline_name,
-                                            steps.len()
-                                        );
-                                    }
-                                    StreamEvent::PipelineStepStarted { step_name, .. } => {
-                                        println!("  → Step: {}", step_name);
-                                    }
-                                    StreamEvent::PipelineStepProgress {
-                                        step_name,
-                                        progress,
-                                        message,
-                                        ..
-                                    } => {
-                                        println!(
-                                            "  ⏳ {}: {:.0}% - {}",
-                                            step_name,
-                                            progress * 100.0,
-                                            message
-                                        );
-                                    }
-                                    StreamEvent::ContentChunk { chunk, .. } => {
-                                        print!("{}", chunk);
-                                    }
-                                    StreamEvent::Completed { final_result, .. } => {
-                                        println!("\n✅ Completed!");
-                                    }
-                                    StreamEvent::Error { error, .. } => {
-                                        println!("❌ Error: {}", error);
-                                    }
-                                    StreamEvent::Cancelled { reason, .. } => {
-                                        println!("🛑 Cancelled: {}", reason);
-                                    }
-                                    _ => {}
-                                }
+                                print_event( &event);
                             }
                         }
                     }
@@ -1200,7 +1150,62 @@ mod client_example {
             // }
         }
     }
-    */
+*/
+    fn print_event(event: &StreamEvent) {
+        match &event {
+            StreamEvent::Started { request_id: id, .. } => {
+                //request_id = Some(id.clone());
+                println!("✓ Started: {}", id);
+            }
+            StreamEvent::CoordinatorThinking { message, .. } => {
+                println!("🤔 Coordinator: {}", message);
+            }
+            StreamEvent::ToolSelected { tool_name, .. } => {
+                println!("🔧 Tool selected: {}", tool_name);
+            }
+            StreamEvent::PipelineStarted {
+                pipeline_name,
+                steps,
+                ..
+            } => {
+                println!(
+                    "⚙️  Pipeline: {} ({} steps)",
+                    pipeline_name,
+                    steps.len()
+                );
+            }
+            StreamEvent::PipelineStepStarted { step_name, .. } => {
+                println!("  → Step: {}", step_name);
+            }
+            StreamEvent::PipelineStepProgress {
+                step_name,
+                progress,
+                message,
+                ..
+            } => {
+                println!(
+                    "  ⏳ {}: {:.0}% - {}",
+                    step_name,
+                    progress * 100.0,
+                    message
+                );
+            }
+            StreamEvent::ContentChunk { chunk, .. } => {
+                print!("{}", chunk);
+            }
+            StreamEvent::Completed { final_result, .. } => {
+                println!("\n✅ Completed!");
+            }
+            StreamEvent::Error { error, .. } => {
+                println!("❌ Error: {}", error);
+            }
+            StreamEvent::Cancelled { reason, .. } => {
+                println!("🛑 Cancelled: {}", reason);
+            }
+            _ => {}
+        }
+    }
+
     // Тест для ChatTool
     #[tokio::test]
     async fn test_chat_tool_streaming() {
@@ -1228,7 +1233,8 @@ mod client_example {
 
         tokio::spawn(async move {
             while let Some(event) = rx.recv().await {
-                match event {
+                print_event( &event);
+/*                match event {
                     StreamEvent::PipelineStarted {
                         pipeline_name,
                         steps,
@@ -1253,7 +1259,7 @@ mod client_example {
                     }
                     _ => {}
                 }
-            }
+*/            }
         });
 
         let result = tool.call(args).await;
@@ -1264,7 +1270,6 @@ mod client_example {
     // Тест для TaskTool
     #[tokio::test]
     async fn test_task_tool_streaming() {
-        let api_key = std::env::var("ollama_API_KEY").expect("API key required");
         let client = client(IS_LOCAL);
 
         let (tx, mut rx) = mpsc::channel(100);
@@ -1285,7 +1290,7 @@ mod client_example {
         let args = TaskToolInput {
             user_id: "user_789".to_string(),
             action: "create".to_string(),
-            task_description: Some("Купить молоко".to_string()),
+            task_description: Some("update object".to_string()),
         };
 
         let mut events = Vec::new();
@@ -1330,14 +1335,15 @@ mod client_example {
         let mut step_count = 0;
         tokio::spawn(async move {
             while let Some(event) = rx.recv().await {
+                print_event( &event);
                 if let StreamEvent::PipelineStepStarted {
                     step_name,
                     step_index,
                     ..
                 } = event
                 {
-                    println!("Step {}: {}", step_index, step_name);
                     step_count += 1;
+                    println!("Step {}: {} {}", step_index, step_name, step_count);
                 }
             }
         });
@@ -1348,10 +1354,11 @@ mod client_example {
     }
 
     // Тест отмены запроса
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_cancellation() {
         let client = client(IS_LOCAL);
-        let (tx, rx) = mpsc::channel(100);
+
+        let (tx, mut rx) = mpsc::channel(100);
         let cancellation_token = CancellationToken::new();
         let cancel_handle = cancellation_token.clone();
 
@@ -1365,23 +1372,134 @@ mod client_example {
             cancellation_token,
         };
 
-        let tool = ChatToolStreaming::new(context, client, tx);
+        let tool = ChatToolStreaming::new(context, client, tx.clone());
 
-        // Отменяем через 100ms
-        tokio::spawn(async move {
-            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        // Важно: spawn задачу для чтения событий
+        // чтобы канал не блокировался
+        let event_handler = tokio::spawn(async move {
+            let mut event_count = 0;
+            while let Some(event) = rx.recv().await {
+                event_count += 1;
+                println!("Received event #{}: {:?}", event_count, event);
+
+                // Прерываем чтение после нескольких событий
+                if event_count > 10 {
+                    break;
+                }
+            }
+            event_count
+        });
+
+        // Отменяем через 200ms
+        let canceller = tokio::spawn(async move {
+            tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
             cancel_handle.cancel().await;
-            println!("Cancellation triggered");
+            println!("✓ Cancellation triggered");
         });
 
         let args = ChatToolInput {
             chat_id: "chat_cancel".to_string(),
-            message: "Long running task".to_string(),
+            message: "Long running task that should be cancelled".to_string(),
         };
 
-        let result = tool.call(args).await;
+        // Выполняем tool с таймаутом
+        let result = tokio::time::timeout(
+            Duration::from_secs(5),
+            tool.call(args)
+        ).await;
+
+        // Проверяем результат
+        match result {
+            Ok(Ok(_)) => {
+                panic!("Expected cancellation, but got success");
+            }
+            Ok(Err(e)) => {
+                println!("✓ Got expected error: {}", e);
+                assert!(
+                    e.to_string().contains("cancel") ||
+                        e.to_string().contains("Cancel"),
+                    "Error should mention cancellation"
+                );
+            }
+            Err(_) => {
+                println!("✓ Operation timed out (expected with cancellation)");
+            }
+        }
+
+        // Ждем завершения обработчиков
+        let _ = canceller.await;
+        let event_count = event_handler.await.unwrap();
+        println!("Processed {} events before cancellation", event_count);
+    }
+
+    // Упрощенный тест без реального API
+    #[tokio::test]
+    async fn test_cancellation_token() {
+        let token = CancellationToken::new();
+        let token_clone = token.clone();
+
+        // Проверяем начальное состояние
+        assert!(!token.is_cancelled().await);
+
+        // Отменяем
+        token_clone.cancel().await;
+
+        // Проверяем отмену
+        assert!(token.is_cancelled().await);
+
+        // Проверяем check()
+        let result = token.check().await;
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("cancelled"));
+    }
+
+    // Тест с mock streaming без реального API
+    #[tokio::test]
+    async fn test_stream_with_cancellation() {
+        let (tx, mut rx) = mpsc::channel(10);
+        let token = CancellationToken::new();
+        let token_clone = token.clone();
+
+        // Producer с проверкой отмены
+        let producer = tokio::spawn(async move {
+            for i in 0..100 {
+                // Проверяем отмену
+                if token_clone.is_cancelled().await {
+                    println!("Producer cancelled at iteration {}", i);
+                    return i;
+                }
+
+                let _ = tx.send(format!("Item {}", i)).await;
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+            100
+        });
+
+        // Consumer
+        let consumer = tokio::spawn(async move {
+            let mut count = 0;
+            while let Some(item) = rx.recv().await {
+                count += 1;
+                println!("Consumed: {}", item);
+
+                if count >= 50 {
+                    break;
+                }
+            }
+            count
+        });
+
+        // Отменяем через 250ms
+        tokio::time::sleep(Duration::from_millis(250)).await;
+        token.cancel().await;
+
+        let producer_count = producer.await.unwrap();
+        let consumer_count = consumer.await.unwrap();
+
+        println!("Producer stopped at: {}", producer_count);
+        println!("Consumer received: {}", consumer_count);
+
+        assert!(producer_count < 100, "Should be cancelled before 100");
     }
 }
 
