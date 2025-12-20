@@ -5,7 +5,7 @@ use rig::providers::ollama;
 use rig::providers::ollama::Client;
 use serde::{Deserialize, Serialize};
 
-// Структуры данных
+// Structures
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Image {
     id: String,
@@ -39,12 +39,12 @@ struct ImageDescriptionResult {
     description: ImageDescription,
 }
 
-// Mock функции для работы с изображениями
+// Mock functions for working with images
 fn read_image(id: &str) -> Result<Image, anyhow::Error> {
-    // Имитация чтения из БД
+    // Simulate reading from the database
     println!("📖 Reading image with id: {}", id);
 
-    // Симуляция возможной ошибки
+    // Simulate possible error
     if id == "error" {
         return Err(anyhow::anyhow!("Image not found"));
     }
@@ -53,18 +53,18 @@ fn read_image(id: &str) -> Result<Image, anyhow::Error> {
         id: id.to_string(),
         //url: format!("https://example.com/images/{}.jpg", id),
         url: format!("data/{}.jpg", id),
-        description: None, // Имитация отсутствия описания
+        description: None, // Simulate absence of description
     })
 }
 
 fn update_image(id: &str, description: String) -> Result<(), anyhow::Error> {
-    // Имитация обновления в БД
+    // Simulate updating in the database
     println!(
         "💾 Updating image {} with description : {:#?}",
         id, description
     );
 
-    // Симуляция возможной ошибки
+    // Simulate possible error
     if id == "error" {
         return Err(anyhow::anyhow!("Failed to update image"));
     }
@@ -73,7 +73,7 @@ fn update_image(id: &str, description: String) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-// Агент для обработки изображений
+// Agent for handling images
 struct ImageDescriptionAgent {
     client: Client,
     model: String,
@@ -131,11 +131,11 @@ Respond ONLY with valid JSON, no additional text."#,
             .build();
         let response: String = agent.prompt(&prompt).await?;
 
-        // Парсинг JSON ответа
+        // Parsing JSON response
         let json_str = response.trim();
         let description: ImageDescription = serde_json::from_str(json_str).unwrap();
         /*            or_else(|_| {
-                    // Попытка извлечь JSON из текста
+                    // Attempt to extract JSON from text
                     if let Some(start) = json_str.find('{') {
                         if let Some(end) = json_str.rfind('}') {
                             let json_part = &json_str[start..=end];
@@ -149,20 +149,20 @@ Respond ONLY with valid JSON, no additional text."#,
     }
 
     async fn process_image(&self, image_id: &str) -> Result<ImageDescriptionResult, anyhow::Error> {
-        // Читаем изображение
+        // Read image
         let image = read_image(image_id)?;
 
-        // Проверяем наличие описания
+        // Check if image already has a description
         let description = if let Some(existing_desc) = &image.description {
             println!("✨ Image {} already has description", image_id);
             serde_json::from_str(existing_desc)?
         } else {
             println!("🔍 Image {} needs description", image_id);
 
-            // Генерируем описание
+            // Generate description
             let desc = self.generate_description(&image.url).await?;
 
-            // Сохраняем описание
+            // Save description
             let desc_json = serde_json::to_string(&desc)?;
             update_image(&image.id, desc_json)?;
 
@@ -179,7 +179,7 @@ Respond ONLY with valid JSON, no additional text."#,
     pub async fn process_request(&self, req_data: ReqData) -> Result<AgentResult, anyhow::Error> {
         let mut descriptions = Vec::new();
 
-        // Обрабатываем uuid_old если задан
+        // Process uuid_old if provided
         if let Some(uuid_old) = req_data.uuid_old {
             println!("\n🔄 Processing uuid_old: {}", uuid_old);
             match self.process_image(&uuid_old).await {
@@ -188,7 +188,7 @@ Respond ONLY with valid JSON, no additional text."#,
             }
         }
 
-        // Обрабатываем uuid_new если задан
+        // Process uuid_new if provided
         if let Some(uuid_new) = req_data.uuid_new {
             println!("\n🔄 Processing uuid_new: {}", uuid_new);
             match self.process_image(&uuid_new).await {
@@ -205,19 +205,19 @@ Respond ONLY with valid JSON, no additional text."#,
 async fn main() -> Result<(), anyhow::Error> {
     println!("🚀 Starting Image Description Agent\n");
 
-    // Создаем агента
+    // Create agent
     let agent = ImageDescriptionAgent::new("qwen3:14b");
 
-    // Пример запроса
+    // Request data
     let req_data = ReqData {
         uuid_old: Some("test-001".to_string()),
         uuid_new: Some("test-002".to_string()),
     };
 
-    // Обрабатываем запрос
+    // Process request
     let result = agent.process_request(req_data).await?;
 
-    // Выводим результат
+    // Show final result
     println!("\n📋 Final Result:");
     println!("{}", serde_json::to_string_pretty(&result)?);
 

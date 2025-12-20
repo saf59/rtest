@@ -33,13 +33,13 @@ impl From<Box<dyn StdError + Send + Sync + 'static>> for AppError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum StreamEvent {
-    // События жизненного цикла
+    // Life cycle events
     Started {
         request_id: String,
         timestamp: i64,
     },
 
-    // События координатора
+    // Coordinator events
     CoordinatorThinking {
         request_id: String,
         message: String,
@@ -77,13 +77,13 @@ pub enum StreamEvent {
         result_preview: Option<String>,
     },
 
-    // События генерации контента
+    // Content generation events
     ContentChunk {
         request_id: String,
         chunk: String,
     },
 
-    // События завершения
+    // Completion events
     Completed {
         request_id: String,
         final_result: String,
@@ -105,7 +105,7 @@ pub enum StreamEvent {
 }
 
 // ============================================================================
-// УПРАВЛЕНИЕ ОТМЕНОЙ
+// MANAGEMENT OF CANCELLATION
 // ============================================================================
 
 #[derive(Clone, Debug)]
@@ -139,7 +139,7 @@ impl CancellationToken {
 }
 
 // ============================================================================
-// МЕНЕДЖЕР АКТИВНЫХ ЗАПРОСОВ
+// MANAGEMENT OF ACTIVE REQUESTS
 // ============================================================================
 
 pub struct RequestManager {
@@ -177,7 +177,7 @@ impl RequestManager {
 }
 
 // ============================================================================
-// СТРУКТУРЫ ЗАПРОСА
+// REQUEST STRUCTURES
 // ============================================================================
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -285,10 +285,10 @@ impl Tool for ChatToolStreaming {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        // Проверяем отмену
+        // Check cancellation
         self.context.cancellation_token.check().await?;
 
-        // Отправляем событие о начале pipeline
+        // Send event about pipeline start
         self.send_event(StreamEvent::PipelineStarted {
             request_id: self.context.request_id.clone(),
             pipeline_name: "ChatPipeline".to_string(),
@@ -300,7 +300,7 @@ impl Tool for ChatToolStreaming {
         })
         .await;
 
-        // Запускаем pipeline
+        // Run pipeline
         let pipeline = ChatPipelineStreaming::new(
             self.client.clone(),
             self.context.clone(),
@@ -537,7 +537,7 @@ impl ChatPipelineStreaming {
         chat_id: &str,
         message: &str,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        // Шаг 1: Анализ контекста
+        // Step 1: Context Analysis
         self.send_event(StreamEvent::PipelineStepStarted {
             request_id: self.context.request_id.clone(),
             step_name: "Context Analysis".to_string(),
@@ -575,7 +575,7 @@ impl ChatPipelineStreaming {
         })
         .await;
 
-        // Шаг 2: Генерация ответа
+        // Step 2: Response Generation
         self.context.cancellation_token.check().await?;
 
         self.send_event(StreamEvent::PipelineStepStarted {
@@ -594,10 +594,10 @@ impl ChatPipelineStreaming {
             ))
             .build();
 
-        // Симулируем streaming генерацию
+        // Simulate streaming generation
         let response = response_agent.prompt(message).await?;
 
-        // Отправляем чанки ответа
+        // Send chunked response
         let chunk_size = 20;
         for (i, chunk) in response
             .chars()
@@ -623,7 +623,7 @@ impl ChatPipelineStreaming {
             })
             .await;
 
-            // Небольшая задержка для демонстрации streaming
+            // Small delay for demonstration of streaming
             tokio::time::sleep(tokio::time::Duration::from_millis(50)).await;
         }
 
@@ -634,7 +634,7 @@ impl ChatPipelineStreaming {
         })
         .await;
 
-        // Шаг 3: Пост-обработка
+        // Step 3: Post-processing
         self.context.cancellation_token.check().await?;
 
         self.send_event(StreamEvent::PipelineStepStarted {
@@ -691,7 +691,7 @@ impl TaskPipelineStreaming {
         action: &str,
         task_description: Option<&str>,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        // Шаг 1: Парсинг задачи
+        // Step 1: Task Parsing
         self.send_event(StreamEvent::PipelineStepStarted {
             request_id: self.context.request_id.clone(),
             step_name: "Task Parsing".to_string(),
@@ -718,7 +718,7 @@ impl TaskPipelineStreaming {
         })
         .await;
 
-        // Шаг 2: Выполнение
+        // Step 2: Execution
         self.context.cancellation_token.check().await?;
 
         self.send_event(StreamEvent::PipelineStepStarted {
@@ -745,7 +745,7 @@ impl TaskPipelineStreaming {
         })
         .await;
 
-        // Шаг 3: Форматирование
+        // Step 3: Formatting
         self.context.cancellation_token.check().await?;
 
         self.send_event(StreamEvent::PipelineStepStarted {
@@ -797,7 +797,7 @@ impl ObjectPipelineStreaming {
         operation: &str,
         data: Option<serde_json::Value>,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        // Шаг 1: Валидация
+        // Step 1: Validation
         self.send_event(StreamEvent::PipelineStepStarted {
             request_id: self.context.request_id.clone(),
             step_name: "Validation".to_string(),
@@ -824,7 +824,7 @@ impl ObjectPipelineStreaming {
         })
         .await;
 
-        // Шаг 2: Модификация
+        // Step 2: Modification
         self.context.cancellation_token.check().await?;
 
         self.send_event(StreamEvent::PipelineStepStarted {
@@ -857,7 +857,7 @@ impl ObjectPipelineStreaming {
         })
         .await;
 
-        // Шаг 3: Подтверждение
+        // Step 3: Confirmation
         self.context.cancellation_token.check().await?;
 
         self.send_event(StreamEvent::PipelineStepStarted {
@@ -912,7 +912,7 @@ impl MasterAgentStreaming {
             let context = AgentContext::from_request(request.clone(), cancellation_token.clone());
             let request_id = context.request_id.clone();
 
-            // Отправляем событие начала
+            // Send event start
             let _ = tx
                 .send(StreamEvent::Started {
                     request_id: request_id.clone(),
@@ -920,10 +920,10 @@ impl MasterAgentStreaming {
                 })
                 .await;
 
-            // Выполняем обработку
+            // Execute processing
             let result = Self::process_request(client, request, context, tx.clone()).await;
 
-            // Отправляем финальное событие
+            // Send final event
             match result {
                 Ok(final_result) => {
                     let _ = tx
@@ -968,7 +968,7 @@ impl MasterAgentStreaming {
         context: AgentContext,
         event_tx: mpsc::Sender<StreamEvent>,
     ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
-        // Отправляем событие о размышлении координатора
+        // Send event coordinator thinking
         let _ = event_tx
             .send(StreamEvent::CoordinatorThinking {
                 request_id: context.request_id.clone(),
@@ -978,7 +978,7 @@ impl MasterAgentStreaming {
 
         context.cancellation_token.check().await?;
 
-        // Создаем tools
+        // Create tools
         let chat_tool = ChatToolStreaming::new(context.clone(), client.clone(), event_tx.clone());
 
         let task_tool = TaskToolStreaming::new(context.clone(), client.clone(), event_tx.clone());
@@ -986,7 +986,9 @@ impl MasterAgentStreaming {
         let object_tool =
             ObjectToolStreaming::new(context.clone(), client.clone(), event_tx.clone());
 
-        // Создаем координатора
+        // Create coordinator
+        let coordinator = Coordinator::new(context.clone(), client.clone(), event_tx.clone());
+
         let coordinator_preamble = format!(
             r#"You are a master coordinator. Analyze and call appropriate tool.
 
@@ -1016,7 +1018,9 @@ Select the most appropriate tool based on context and user request.
 
         context.cancellation_token.check().await?;
 
-        // Вызываем координатора
+        // Create coordinator
+        let coordinator = coordinator;
+
         let response = coordinator.prompt(&request.message).await?;
 
         Ok(response)
@@ -1083,7 +1087,7 @@ pub fn create_router(api_key: String) -> Router {
 }
 */
 // ============================================================================
-// ПРИМЕР ИСПОЛЬЗОВАНИЯ НА КЛИЕНТЕ
+// Example usage on client
 // ============================================================================
 
 #[cfg(test)]
@@ -1094,11 +1098,11 @@ mod client_example {
     /*    pub async fn example_client() {
             let client = reqwest::Client::new();
 
-            // Отправляем запрос и получаем stream
+            // Send request and get stream
             let response = client
                 .post("http://localhost:8080/agent/stream")
                 .json(&AgentRequest {
-                    message: "Покажи мои задачи".to_string(),
+                    message: "Show my tasks".to_string(),
                     user_id: Some("user_123".to_string()),
                     chat_id: None,
                     object_id: None,
@@ -1110,7 +1114,7 @@ mod client_example {
                 .await
                 .unwrap();
 
-            // Читаем SSE события
+            // Read SSE events
             let mut stream = response.bytes_stream();
             let mut request_id: Option<String> = None;
 
@@ -1121,7 +1125,7 @@ mod client_example {
                     Ok(bytes) => {
                         let text = String::from_utf8_lossy(&bytes);
 
-                        // Парсим SSE формат
+                        // Parse SSE format
                         for line in text.lines() {
                             if line.starts_with("data: ") {
                                 let json_str = &line[6..];
@@ -1138,7 +1142,7 @@ mod client_example {
                     }
                 }
 
-                // Пример отмены запроса
+                // Example of canceling a request
                 // if some_condition {
                 //     if let Some(id) = &request_id {
                 //         client
@@ -1345,7 +1349,7 @@ mod client_example {
         assert!(result.unwrap().contains("obj_999"));
     }
 
-    // Тест отмены запроса
+    // Test cancellation
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_cancellation() {
         let client = client(IS_LOCAL);
@@ -1366,7 +1370,7 @@ mod client_example {
 
         let tool = ChatToolStreaming::new(context, client, tx.clone());
 
-        // Event handler с таймаутом и явным завершением
+        // Event handler with timeout and explicit completion
         let event_handler = tokio::spawn(async move {
             let mut event_count = 0;
             let timeout_duration = Duration::from_secs(3);
@@ -1377,7 +1381,7 @@ mod client_example {
                         event_count += 1;
                         println!("Event #{}: {:?}", event_count, event);
 
-                        // Останавливаемся на финальных событиях
+                        // Stop on final events
                         match event {
                             StreamEvent::Cancelled { .. } => {
                                 println!("✓ Received cancellation event");
@@ -1394,7 +1398,7 @@ mod client_example {
                             _ => {}
                         }
 
-                        // Лимит для безопасности
+                        // Limit for safety
                         if event_count > 20 {
                             println!("! Reached event limit");
                             break;
@@ -1413,7 +1417,7 @@ mod client_example {
             event_count
         });
 
-        // Отменяем через 100ms (до начала реального API вызова)
+        // Cancel after 100ms (before real API call)
         let canceller = tokio::spawn(async move {
             tokio::time::sleep(Duration::from_millis(100)).await;
             cancel_handle.cancel().await;
@@ -1425,14 +1429,14 @@ mod client_example {
             message: "Test cancellation".to_string(),
         };
 
-        // Вызываем tool с коротким таймаутом
+        // Call tool with short timeout
         let tool_result = tokio::time::timeout(Duration::from_secs(2), tool.call(args)).await;
 
-        // Проверяем результат
+        // Check result
         match tool_result {
             Ok(Ok(response)) => {
                 println!("! Unexpected success: {}", response);
-                // Если успел выполниться до отмены - это тоже нормально
+                // If operation completed before cancellation, it's also acceptable
             }
             Ok(Err(e)) => {
                 println!("✓ Got error as expected: {}", e);
@@ -1448,10 +1452,10 @@ mod client_example {
             }
         }
 
-        // Закрываем канал явно для завершения event_handler
+        // Close channel explicitly to finish event_handler
         drop(tx);
 
-        // Ждем завершения с таймаутом
+        // Wait for completion with timeout
         let _ = tokio::time::timeout(Duration::from_secs(2), canceller).await;
 
         match tokio::time::timeout(Duration::from_secs(2), event_handler).await {
@@ -1468,38 +1472,38 @@ mod client_example {
         }
     }
 
-    // Упрощенный тест без реального API
+    // Simplified test without real API
     #[tokio::test]
     async fn test_cancellation_token() {
         let token = CancellationToken::new();
         let token_clone = token.clone();
 
-        // Проверяем начальное состояние
+        // Check initial state
         assert!(!token.is_cancelled().await);
 
-        // Отменяем
+        // Cancel
         token_clone.cancel().await;
 
-        // Проверяем отмену
+        // Check cancellation
         assert!(token.is_cancelled().await);
 
-        // Проверяем check()
+        // Check check()
         let result = token.check().await;
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("cancelled"));
     }
 
-    // Тест с mock streaming без реального API
+    // Test with mock streaming without real API
     #[tokio::test]
     async fn test_stream_with_cancellation() {
         let (tx, mut rx) = mpsc::channel(10);
         let token = CancellationToken::new();
         let token_clone = token.clone();
 
-        // Producer с проверкой отмены
+        // Producer with cancellation check
         let producer = tokio::spawn(async move {
             for i in 0..100 {
-                // Проверяем отмену
+                // Check cancellation
                 if token_clone.is_cancelled().await {
                     println!("Producer cancelled at iteration {}", i);
                     return i;

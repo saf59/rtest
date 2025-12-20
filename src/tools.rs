@@ -15,7 +15,7 @@ pub struct Image {
 #[error("Math error")]
 struct MathError;
 
-// делаем tool Descriptor
+// tool Descriptor
 #[derive(Deserialize, Serialize)]
 struct Descriptor;
 
