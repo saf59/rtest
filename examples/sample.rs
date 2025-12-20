@@ -987,7 +987,7 @@ impl MasterAgentStreaming {
             ObjectToolStreaming::new(context.clone(), client.clone(), event_tx.clone());
 
         // Create coordinator
-       // let coordinator = Coordinator::new(context.clone(), client.clone(), event_tx.clone());
+        // let coordinator = Coordinator::new(context.clone(), client.clone(), event_tx.clone());
 
         let coordinator_preamble = format!(
             r#"You are a master coordinator. Analyze and call appropriate tool.
@@ -1155,6 +1155,7 @@ mod client_example {
             }
         }
     */
+
     fn print_event(event: &StreamEvent) {
         match &event {
             StreamEvent::Started { request_id: id, .. } => {
@@ -1186,9 +1187,11 @@ mod client_example {
                 println!("  ⏳ {}: {:.0}% - {}", step_name, progress * 100.0, message);
             }
             StreamEvent::ContentChunk { chunk, .. } => {
-                print!("{}", chunk);
+                println!("{}", chunk);
             }
-            StreamEvent::Completed { final_result, .. } => {
+            StreamEvent::Completed {
+                final_result: _, ..
+            } => {
                 println!("\n✅ Completed!");
             }
             StreamEvent::Error { error, .. } => {
@@ -1348,7 +1351,6 @@ mod client_example {
         assert!(result.is_ok());
         assert!(result.unwrap().contains("obj_999"));
     }
-
     // Test cancellation
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn test_cancellation() {
@@ -1471,7 +1473,6 @@ mod client_example {
             }
         }
     }
-
     // Simplified test without real API
     #[tokio::test]
     async fn test_cancellation_token() {
@@ -1492,7 +1493,6 @@ mod client_example {
         assert!(result.is_err());
         assert!(result.unwrap_err().to_string().contains("cancelled"));
     }
-
     // Test with mock streaming without real API
     #[tokio::test]
     async fn test_stream_with_cancellation() {
