@@ -987,7 +987,7 @@ impl MasterAgentStreaming {
             ObjectToolStreaming::new(context.clone(), client.clone(), event_tx.clone());
 
         // Create coordinator
-        let coordinator = Coordinator::new(context.clone(), client.clone(), event_tx.clone());
+       // let coordinator = Coordinator::new(context.clone(), client.clone(), event_tx.clone());
 
         let coordinator_preamble = format!(
             r#"You are a master coordinator. Analyze and call appropriate tool.
