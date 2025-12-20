@@ -19,4 +19,4 @@ futures = "0.3.31"
 fluent-bundle = "0.16.0"
 unic-langid = "0.9.6"
 thiserror = "2.0.17"
-
+uuid = { version = "1.19.0", features = ["v7"] }
