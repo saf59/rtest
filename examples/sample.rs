@@ -1531,7 +1531,7 @@ mod client_example {
             count
         });
 
-        // Отменяем через 250ms
+        // Cancel in 250ms
         tokio::time::sleep(Duration::from_millis(250)).await;
         token.cancel().await;
 
