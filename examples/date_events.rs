@@ -15,3 +15,6 @@ fn parse_date_events(prompt: &str) {
     pretty_print(event);
 }
 */
+pub fn main() {
+
+}

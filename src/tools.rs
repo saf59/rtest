@@ -1,4 +1,13 @@
-pub struct Image {
+use anyhow::Result;
+use rig::agent::stream_to_stdout;
+use rig::prelude::*;
+use rig::providers::together;
+use rig::{completion::ToolDefinition, providers, streaming::StreamingPrompt, tool::Tool};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+
+#[derive(Deserialize, Serialize)]
+pub struct CXImage {
     url: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     storage_path: Option<String>,
@@ -11,24 +20,25 @@ pub struct Image {
     #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
 }
+
 #[derive(Debug, thiserror::Error)]
 #[error("Math error")]
-struct MathError;
+pub struct MathError;
 
 // tool Descriptor
 #[derive(Deserialize, Serialize)]
-struct Descriptor;
+pub struct Descriptor;
 
 impl Tool for Descriptor {
     const NAME: &'static str = "descriptor";
     type Error = MathError;
-    type Args = OperationArgs;
+    type Args = String;
     type Output = String;
 
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         ToolDefinition {
             name: "descriptor".to_string(),
-            description: "Desctip document by it ID".to_string(),
+            description: "Descrip document by it ID".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
@@ -43,7 +53,7 @@ impl Tool for Descriptor {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let result = args.id;
+        let result = args;
         Ok(result)
     }
 }
@@ -53,9 +63,9 @@ struct ImageFinder;
 
 impl Tool for ImageFinder {
     const NAME: &'static str = "image_finder";
-    //type Error = MathError;
-    type Args = OperationArgs;
-    type Output = Image;
+    type Error = MathError;
+    type Args = String;
+    type Output = CXImage;
 
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         ToolDefinition {
@@ -75,7 +85,7 @@ impl Tool for ImageFinder {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let result = Image {
+        let result = CXImage {
             url: "./data/2025-12-15.jpg".to_string(),
             storage_path: None,
             size: None,
