@@ -2,12 +2,12 @@ use rig::agent::stream_to_stdout;
 use rig::prelude::*;
 use rig::streaming::StreamingPrompt;
 use rig_test::helper::*;
-use rig_test::tools::{CXNothing, Descriptor};
+use rig_test::tools::{CXNothing, Descriptor, ImageFinder};
 use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let is_local = false;
+    let is_local = true;
     let client = client(is_local);
     let tool_model = "functiongemma"; //REMOTE_MODELS[9]; // functiongemma
     let tool_agent = client
@@ -15,10 +15,13 @@ async fn main() -> Result<(), anyhow::Error> {
         .preamble("You are a model that can do function calling with the following functions")
         .tool(CXNothing)
         .tool(Descriptor)
+        .tool(ImageFinder)
+        .context("{\"id\": \"12345\"}")
         .build();
     let start = Instant::now();
     let mut stream = tool_agent
-        .stream_prompt("Who are you!")
+        .stream_prompt("Find image")
+        //.stream_prompt("Who are you!")
         //.stream_prompt("Show me last changes!")
         .await;
     /*
