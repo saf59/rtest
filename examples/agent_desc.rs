@@ -210,8 +210,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     // Request data
     let req_data = ReqData {
-        uuid_old: Some("test-001".to_string()),
-        uuid_new: Some("test-002".to_string()),
+        uuid_old: Some("2025-12-02".to_string()),
+        uuid_new: Some("2025-12-15".to_string()),
     };
 
     // Process request
@@ -233,7 +233,7 @@ mod tests {
         let agent = ImageDescriptionAgent::new("qwen3:14b");
 
         let req_data = ReqData {
-            uuid_old: Some("test-001".to_string()),
+            uuid_old: Some("2025-12-02".to_string()),
             uuid_new: None,
         };
 
@@ -249,8 +249,8 @@ mod tests {
         let agent = ImageDescriptionAgent::new("qwen3:14b");
 
         let req_data = ReqData {
-            uuid_old: Some("test-001".to_string()),
-            uuid_new: Some("test-002".to_string()),
+            uuid_old: Some("2025-12-02".to_string()),
+            uuid_new: Some("2025-12-15".to_string()),
         };
 
         let result = agent.process_request(req_data).await;

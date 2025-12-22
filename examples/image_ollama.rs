@@ -12,7 +12,7 @@ use rig::{
 use rig_test::helper::*;
 use tokio::fs;
 
-const IMAGE_FILE_PATH: &str = "./data/image.jpg";
+const IMAGE_FILE_PATH: &str = "./data/2025-12-15.jpg";
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct Description {
