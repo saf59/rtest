@@ -27,7 +27,7 @@ impl From<Box<dyn StdError + Send + Sync + 'static>> for AppError {
 }
 
 /// ============================================================================
-// ТИПЫ СОБЫТИЙ ДЛЯ STREAMING
+// EVENT TYPES FOR STREAMING
 // ============================================================================
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,7 +51,7 @@ pub enum StreamEvent {
         parameters: serde_json::Value,
     },
 
-    // События pipeline
+    // Pipeline events
     PipelineStarted {
         request_id: String,
         pipeline_name: String,
@@ -90,14 +90,14 @@ pub enum StreamEvent {
         timestamp: i64,
     },
 
-    // События ошибок
+    // Error events
     Error {
         request_id: String,
         error: String,
         recoverable: bool,
     },
 
-    // События отмены
+    // Cancelled events
     Cancelled {
         request_id: String,
         reason: String,
@@ -881,7 +881,7 @@ impl ObjectPipelineStreaming {
 }
 
 // ============================================================================
-// MASTER AGENT С STREAMING
+// MASTER AGENT WITH STREAMING
 // ============================================================================
 
 pub struct MasterAgentStreaming {
@@ -1032,9 +1032,10 @@ Select the most appropriate tool based on context and user request.
 }
 
 // ============================================================================
-// API С SERVER-SENT EVENTS (SSE)
+// API WITH SERVER-SENT EVENTS (SSE)
 // ============================================================================
-/*/
+
+/*
 use axum::{
     Json, Router,
     extract::{Path, State},
@@ -1086,6 +1087,7 @@ pub fn create_router(api_key: String) -> Router {
         .with_state(state)
 }
 */
+
 // ============================================================================
 // Example usage on client
 // ============================================================================
@@ -1204,7 +1206,7 @@ mod client_example {
         }
     }
 
-    // Тест для ChatTool
+    // Test for ChatTool
     #[tokio::test]
     async fn test_chat_tool_streaming() {
         let client = client(IS_LOCAL);
@@ -1266,7 +1268,7 @@ mod client_example {
         println!("\nFinal result: {}", result.unwrap());
     }
 
-    // Тест для TaskTool
+    // Test for TaskTool
     #[tokio::test]
     async fn test_task_tool_streaming() {
         let client = client(IS_LOCAL);
@@ -1305,7 +1307,7 @@ mod client_example {
         assert!(result.unwrap().contains("create"));
     }
 
-    // Тест для ObjectTool
+    // Test for ObjectTool
     #[tokio::test]
     async fn test_object_tool_streaming() {
         let client = client(IS_LOCAL);

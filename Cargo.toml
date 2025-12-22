@@ -21,8 +21,8 @@ unic-langid = "0.9.6"
 thiserror = "2.0.17"
 uuid = { version = "1.19.0", features = ["v7"] }
 chrono = "0.4.42"
-event_parser = "0.1.1"
-date_time_parser = "0.2.0"
+//event_parser = "0.1.1"
+//date_time_parser = "0.2.0"
 
 [env]
 RUST_TEST_NOCAPTURE=1

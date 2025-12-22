@@ -1,3 +1,4 @@
+/*
 use chrono::WeekdaySet;
 use date_time_parser::Recognizable;
 use event_parser::{pretty_print, to_event};
@@ -13,3 +14,4 @@ fn parse_date_events(prompt: &str) {
     println!("{:#?}", date_expr);
     pretty_print(event);
 }
+*/
