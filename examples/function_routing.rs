@@ -7,7 +7,7 @@ use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let is_local = true;
+    let is_local = false;
     let client = client(is_local);
     let tool_model = "functiongemma"; //REMOTE_MODELS[9]; // functiongemma
     let tool_agent = client
