@@ -3,8 +3,22 @@ use rig::agent::stream_to_stdout;
 use rig::prelude::*;
 use rig::providers::together;
 use rig::{completion::ToolDefinition, providers, streaming::StreamingPrompt, tool::Tool};
+use rig::client::Nothing;
 use serde::{Deserialize, Serialize};
+use serde::de::StdError;
 use serde_json::json;
+
+#[derive(Debug, thiserror::Error)]
+#[error("App error")]
+pub struct CXError;
+
+impl From<Box<dyn StdError + Send + Sync + 'static>> for CXError {
+    #[inline(always)]
+    fn from(b: Box<dyn StdError + Send + Sync + 'static>) -> Self {
+        //b // both sides are the same type
+        b.into()
+    }
+}
 
 #[derive(Deserialize, Serialize)]
 pub struct CXImage {
@@ -21,17 +35,13 @@ pub struct CXImage {
     description: Option<String>,
 }
 
-#[derive(Debug, thiserror::Error)]
-#[error("Math error")]
-pub struct MathError;
-
 // tool Descriptor
 #[derive(Deserialize, Serialize)]
 pub struct Descriptor;
 
 impl Tool for Descriptor {
     const NAME: &'static str = "descriptor";
-    type Error = MathError;
+    type Error = CXError;
     type Args = String;
     type Output = String;
 
@@ -63,7 +73,7 @@ struct ImageFinder;
 
 impl Tool for ImageFinder {
     const NAME: &'static str = "image_finder";
-    type Error = MathError;
+    type Error = CXError;
     type Args = String;
     type Output = CXImage;
 
@@ -93,6 +103,33 @@ impl Tool for ImageFinder {
             hash: None,
             description: None,
         };
+        Ok(result)
+    }
+}
+
+#[derive(Deserialize, Serialize)]
+pub struct CXNothing;
+
+impl Tool for CXNothing {
+    const NAME: &'static str = "nothing";
+    type Error = CXError;
+    type Args = String;
+    type Output = String;
+
+    async fn definition(&self, _prompt: String) -> ToolDefinition {
+        ToolDefinition {
+            name: "descriptor".to_string(),
+            description: "The default tool when there is no request for objects, buildings, structures, reports, images, videos, descriptions and comparisons.\
+            Always call this function if the parameters are not found.".to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {},
+            }),
+        }
+    }
+
+    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        let result = "I am nobody!".to_string();
         Ok(result)
     }
 }

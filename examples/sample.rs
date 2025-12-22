@@ -6,25 +6,13 @@ use rig_test::helper::*;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
-use std::error::Error as StdError;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::sync::mpsc;
 use uuid::Uuid;
+use rig_test::tools::CXError;
 
 const IS_LOCAL: bool = false;
-
-#[derive(Debug, thiserror::Error)]
-#[error("App error")]
-pub struct AppError;
-
-impl From<Box<dyn StdError + Send + Sync + 'static>> for AppError {
-    #[inline(always)]
-    fn from(b: Box<dyn StdError + Send + Sync + 'static>) -> Self {
-        //b // both sides are the same type
-        b.into()
-    }
-}
 
 /// ============================================================================
 // EVENT TYPES FOR STREAMING
@@ -259,7 +247,7 @@ impl ChatToolStreaming {
 impl Tool for ChatToolStreaming {
     const NAME: &'static str = "chat_tool";
 
-    type Error = AppError;
+    type Error = CXError;
     type Args = ChatToolInput;
     type Output = String;
 
@@ -351,7 +339,7 @@ impl TaskToolStreaming {
 impl Tool for TaskToolStreaming {
     const NAME: &'static str = "task_tool";
 
-    type Error = AppError;
+    type Error = CXError;
     type Args = TaskToolInput;
     type Output = String;
 
@@ -447,7 +435,7 @@ impl ObjectToolStreaming {
 impl Tool for ObjectToolStreaming {
     const NAME: &'static str = "object_tool";
 
-    type Error = AppError;
+    type Error = CXError;
     type Args = ObjectToolInput;
     type Output = String;
 
