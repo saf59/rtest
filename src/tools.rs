@@ -1,11 +1,7 @@
 use anyhow::Result;
-use rig::agent::stream_to_stdout;
-use rig::prelude::*;
-use rig::providers::together;
-use rig::{completion::ToolDefinition, providers, streaming::StreamingPrompt, tool::Tool};
-use rig::client::Nothing;
-use serde::{Deserialize, Serialize};
+use rig::{completion::ToolDefinition, tool::Tool};
 use serde::de::StdError;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Debug, thiserror::Error)]
@@ -67,7 +63,7 @@ impl Tool for Descriptor {
         Ok(result)
     }
 }
-
+#[allow(dead_code)]
 #[derive(Deserialize, Serialize)]
 struct ImageFinder;
 
@@ -94,7 +90,7 @@ impl Tool for ImageFinder {
         }
     }
 
-    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+    async fn call(&self, _args: Self::Args) -> Result<Self::Output, Self::Error> {
         let result = CXImage {
             url: "./data/2025-12-15.jpg".to_string(),
             storage_path: None,
@@ -128,7 +124,7 @@ impl Tool for CXNothing {
         }
     }
 
-    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+    async fn call(&self, _args: Self::Args) -> Result<Self::Output, Self::Error> {
         let result = "I am nobody!".to_string();
         Ok(result)
     }

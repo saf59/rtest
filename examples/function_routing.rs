@@ -1,24 +1,25 @@
-use rig::pipeline::{self, Op, TryOp};
-use rig::prelude::*;
-use rig_test::helper::*;
-use std::time::Instant;
 use rig::agent::stream_to_stdout;
+use rig::prelude::*;
 use rig::streaming::StreamingPrompt;
-use rig_test::tools::Descriptor;
+use rig_test::helper::*;
+use rig_test::tools::{CXNothing, Descriptor};
+use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     let is_local = false;
     let client = client(is_local);
-    let tool_model = REMOTE_MODELS[9]; // functiongemma
+    let tool_model = "functiongemma"; //REMOTE_MODELS[9]; // functiongemma
     let tool_agent = client
         .agent(tool_model)
         .preamble("You are a model that can do function calling with the following functions")
+        .tool(CXNothing)
         .tool(Descriptor)
         .build();
     let start = Instant::now();
     let mut stream = tool_agent
-        .stream_prompt("Show me last changes!")
+        .stream_prompt("Who are you!")
+        //.stream_prompt("Show me last changes!")
         .await;
     /*
         .map_ok(|x: String| match x.trim() {
@@ -39,6 +40,6 @@ async fn main() -> Result<(), anyhow::Error> {
     */
     let _ = stream_to_stdout(&mut stream).await?;
     //println!("Pipeline result: {response:?}");
-    println!("Time elapsed: {:?}", start.elapsed());
+    println!("\nTime elapsed: {:?}", start.elapsed());
     Ok(())
 }
