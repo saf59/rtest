@@ -16,7 +16,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .tool(CXNothing)
         .tool(Descriptor)
         .tool(ImageFinder)
-        .context("{\"id\": \"12345\"}")
+        .context("{\"old_id\": \"12345\"}")
         .build();
     let start = Instant::now();
     let mut stream = tool_agent
