@@ -1,4 +1,4 @@
-use rig_test::promot_cotext::ContextParser;
+use rig_test::prompt_context::ContextParser;
 
 fn main() {
     let mut parser = ContextParser::new();
@@ -18,7 +18,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use rig_test::promot_cotext::*;
+    use rig_test::prompt_context::*;
 
     #[test]
     fn test_basic_parsing() {
