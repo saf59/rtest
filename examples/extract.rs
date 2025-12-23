@@ -9,7 +9,7 @@ enum EntityType {
     Object,
     Document,
     Description,
-    Сomparison,
+    Comparison,
     Period,
     Amount,
     Date,
