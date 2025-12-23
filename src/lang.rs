@@ -38,6 +38,10 @@ impl TextManager {
     pub fn get_msg(&self, lang: &str, msg_id: &str) -> String {
         self.get_msg_with_args(lang, msg_id, FluentArgs::new())
     }
+    pub fn split_msg(&self, lang: &str, msg_id: &str) -> Vec<String> {
+        self.get_msg_with_args(lang, msg_id, FluentArgs::new())
+            .split_whitespace().map(String::from).collect()
+    }
     pub fn get_msg1(&self, lang: &str, msg_id: &str, param1: &str) -> String {
         let mut args = FluentArgs::new();
         args.set("p1", param1);
