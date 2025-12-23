@@ -1,8 +1,8 @@
-use std::time::Instant;
 use rig::client::CompletionClient;
+use rig_test::helper::{LOCAL_MODELS, REMOTE_MODELS, client};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use rig_test::helper::{client, LOCAL_MODELS, REMOTE_MODELS};
+use std::time::Instant;
 
 #[derive(Debug, Deserialize, JsonSchema, Serialize)]
 enum EntityType {
@@ -66,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //   - Type: Amount, Name: 2, Confidence: 0.90
     //   - Type: Period, Name: week, Confidence: 0.90
     // Time elapsed: 84.4807673s
-    // 9: Entities: "mistral-nemo:12b" - long noise
+    // 9: Entities: "mistral-nemo:12b" - long noise -- removed
     //   - Type: Object, Name: building, Confidence: 0.95
     //   - Type: Object, Name: construction, Confidence: 0.87
     //   - Type: Document, Name: picture, Confidence: 0.92
@@ -81,7 +81,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create the extractor
     let extractor = client
         .extractor::<ExtractedEntities>(model)
-        .preamble("You are an AI assistant specialized in extracting named entities from text. \
+        .preamble(
+            "You are an AI assistant specialized in extracting named entities from text. \
                    Your task is to identify and categorize entities such as \
                    object ( building, construction, object ), \
                    document ( picture, image, video, report), \
@@ -90,14 +91,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                    period ( last, new, day, week, month, quarter, year), \
                    amount ( none, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10), \
                    Provide a confidence score for each entity identified.\
-                   Respond with a JSON object containing extracted entities.")
+                   Respond with a JSON object containing extracted entities.",
+        )
         .build();
 
     // Sample text for entity extraction
     let sample_text = "Detect changes during last two weeks";
     //let sample_text = "Show objects with changes during 5 days";
 
-    println!("{:?}: Extracting entities from the following text:\n{}\n",n, sample_text);
+    println!(
+        "{:?}: Extracting entities from the following text:\n{}\n",
+        n, sample_text
+    );
     let start = Instant::now();
     // Extract entities
     match extractor.extract(sample_text).await {
