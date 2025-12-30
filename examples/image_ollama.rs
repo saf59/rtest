@@ -1,27 +1,31 @@
 use std::io::Cursor;
 use std::time::Instant;
 
-use base64::{Engine, prelude::BASE64_STANDARD};
+use base64::{prelude::BASE64_STANDARD, Engine};
 use image::{GenericImageView, ImageFormat};
-use rig::message::DocumentSourceKind;
+use rig::message::{DocumentSourceKind, Message, UserContent};
 use rig::prelude::*;
-use rig::{
-    completion::{Prompt, message::Image},
-    message::ImageMediaType,
-};
+use rig::{completion::{message::Image, Prompt}, message::ImageMediaType, OneOrMany};
 use rig_test::helper::*;
 use tokio::fs;
 
-
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let model = LOCAL_MODELS[4];
-    let img: &str = "D:/projects/rust/cx/cx58-agent/data/3w_1.jpg";
-    let prompt = "In this picture, all I see only three empty window openings.";
-    descript(model, true, img, prompt).await?
+    let model = REMOTE_MODELS[1];
+    //let img: &str = "D:/projects/rust/cx/cx58-agent/data/3w_5.jpg";
+    let img: &str = "./data/4к_1.jpg";
+    //let prompt = "In this picture, all I see only three empty window openings.";
+    let prompt = "Describe the picture!";
+    descript(model, false, img, prompt).await?;
+    Ok(())
 }
 
-async fn descript(model: &str, is_local: bool, img: &str, prompt: &str) -> Result<(), anyhow::Error> {   
+async fn descript(
+    model: &str,
+    is_local: bool,
+    img: &str,
+    prompt: &str,
+) -> Result<(), anyhow::Error> {
     let start = Instant::now();
     // Tracing
     tracing_subscriber::fmt()
@@ -91,12 +95,18 @@ Response format (JSON only, no other text):
         media_type: Some(ImageMediaType::JPEG),
         ..Default::default()
     };
+    let response = agent
+        .prompt(Message::User {
+            content: OneOrMany::many(vec![
+                UserContent::Text(prompt.into()),
+                UserContent::Image(image),
+            ])?,
+        })
+        .await?;
+
 
     // Prompt the agent and print the response
-    let response = agent
-        .prompt(prompt)
-        .prompt(image)
-        .await?;
+    //let response = agent.prompt(image).await?;
 
     println!("{response}");
     println!("Time elapsed: {:?}", start.elapsed());
