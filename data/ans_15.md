@@ -1,0 +1,6 @@
+﻿{
+  "description": "Finished interior space with installed windows and radiators, but no visible doors. The room features painted walls, functional window coverings, and operational heating units, indicating a completed installation stage for present elements.",
+  "windows": "Three installed windows (1.5m x 1.2m each) with aluminum frames. Upper sections feature beige roller blinds (partially extended, showing minor wear), lower sections have frosted glass panes. Condition: fully operational with intact frames. Installation stage: complete with functional hardware and glazing.",
+  "doors": "No doors present; no door frames, jambs, or openings visible in the space. Walls are fully painted with no preparation for door installation observed.",
+  "radiators": "Two cast-iron radiators (1.2m length each) mounted beneath windows. Light beige paint with minor surface oxidation. Condition: fully functional with visible connection pipes and valves. Installation stage: complete with operational heating system integration."
+}

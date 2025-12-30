@@ -12,18 +12,16 @@ use rig::{
 use rig_test::helper::*;
 use tokio::fs;
 
-const IMAGE_FILE_PATH: &str = "./data/2025-12-15.jpg";
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-struct Description {
-    description: String,
-    windows: String,
-    doors: String,
-    radiators: String,
-}
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    let model = LOCAL_MODELS[4];
+    let img: &str = "D:/projects/rust/cx/cx58-agent/data/3w_1.jpg";
+    let prompt = "In this picture, all I see only three empty window openings.";
+    descript(model, true, img, prompt).await?
+}
+
+async fn descript(model: &str, is_local: bool, img: &str, prompt: &str) -> Result<(), anyhow::Error> {   
     let start = Instant::now();
     // Tracing
     tracing_subscriber::fmt()
@@ -34,8 +32,6 @@ async fn main() -> Result<(), anyhow::Error> {
     let json = serde_json::json!({
         "format": "json"
     });
-    let is_local = false;
-    let model = REMOTE_MODELS[5];
     if !check_model(model, is_local) {
         return Err(anyhow::anyhow!(
             "Model not found: {}, is_local: {}",
@@ -50,12 +46,18 @@ async fn main() -> Result<(), anyhow::Error> {
     // Translate responce to: {}
     // Translate responce to German.
 
-    let prompt = format!(
+    let system = format!(
         r#"
 You are an expert in construction description.
-Your speciality is only windows, doors and radiators, if present.
-If there are none, please note this in the detailed description.
+Your specialization is only windows, doors, radiators and empty openings for future installation of windows and doors.
+If any windows, doors, or radiators are missing and there are only bare openings, be sure to describe this in detail!
 It is necessary to describe in detail the quantity, material, condition, completeness and stage of installation of windows, doors and radiators.
+An error in determining presence or quantity is very bad!
+Don't let me down with the definitions and calculations.
+Don't print empty lines!
+This is a photo of a construction site, so you might see exposed concrete or brick.
+If so, please describe it.
+Don't invent what you don't see!
 
 Response format (JSON only, no other text):
 {{
@@ -63,6 +65,7 @@ Response format (JSON only, no other text):
   "windows": "Detailed information about windows only",
   "doors": "Detailed information about doors only",
   "radiators": "Detailed information about radiators only",
+  "openings": "Detailed information about openings only",
 }}
 "#,
         //        language
@@ -73,12 +76,12 @@ Response format (JSON only, no other text):
         .agent(model)
         // .agent("llama3.2-vision")
         .additional_params(json)
-        .preamble(&prompt)
-        .temperature(0.5)
+        .preamble(&system)
+        .temperature(0.1)
         .build();
 
     // Read image and convert to base64
-    let image_bytes = fs::read(IMAGE_FILE_PATH).await?;
+    let image_bytes = fs::read(img).await?;
     let scaled = resize_image_to_bytes(&image_bytes, 1200, 1200)?;
     let image_base64 = BASE64_STANDARD.encode(scaled);
 
@@ -90,7 +93,10 @@ Response format (JSON only, no other text):
     };
 
     // Prompt the agent and print the response
-    let response = agent.prompt(image).await?;
+    let response = agent
+        .prompt(prompt)
+        .prompt(image)
+        .await?;
 
     println!("{response}");
     println!("Time elapsed: {:?}", start.elapsed());
@@ -106,7 +112,9 @@ fn resize_image_to_bytes(
     // 1. Open the image file
     let img = image::load_from_memory(image_bytes)?;
     //println!("Original dimensions: {:?}", img.dimensions());
-
+    if img.height() <= output_height && img.width() <= output_width {
+        return Ok(image_bytes.to_vec());
+    }
     // 2. Resize the image (using the Lanczos3 filter for high quality)
     let resized_img = img.resize(
         output_width,
@@ -126,3 +134,12 @@ fn resize_image_to_bytes(
     // The 'bytes' vector now contains the image data
     Ok(bytes)
 }
+/*
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct Description {
+    description: String,
+    windows: String,
+    doors: String,
+    radiators: String,
+}
+*/

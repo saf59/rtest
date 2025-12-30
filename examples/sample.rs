@@ -66,7 +66,7 @@ pub enum StreamEvent {
     },
 
     // Content generation events
-    ContentChunk {
+    TextChunk {
         request_id: String,
         chunk: String,
     },
@@ -596,7 +596,7 @@ impl ChatPipelineStreaming {
             self.context.cancellation_token.check().await?;
 
             let chunk_str: String = chunk.iter().collect();
-            self.send_event(StreamEvent::ContentChunk {
+            self.send_event(StreamEvent::TextChunk {
                 request_id: self.context.request_id.clone(),
                 chunk: chunk_str,
             })
@@ -1176,7 +1176,7 @@ mod client_example {
             } => {
                 println!("  ⏳ {}: {:.0}% - {}", step_name, progress * 100.0, message);
             }
-            StreamEvent::ContentChunk { chunk, .. } => {
+            StreamEvent::TextChunk { chunk, .. } => {
                 println!("{}", chunk);
             }
             StreamEvent::Completed {
