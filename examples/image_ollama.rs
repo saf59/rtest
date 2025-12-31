@@ -1,11 +1,15 @@
 use std::io::Cursor;
 use std::time::Instant;
 
-use base64::{prelude::BASE64_STANDARD, Engine};
+use base64::{Engine, prelude::BASE64_STANDARD};
 use image::{GenericImageView, ImageFormat};
 use rig::message::{DocumentSourceKind, Message, UserContent};
 use rig::prelude::*;
-use rig::{completion::{message::Image, Prompt}, message::ImageMediaType, OneOrMany};
+use rig::{
+    OneOrMany,
+    completion::{Prompt, message::Image},
+    message::ImageMediaType,
+};
 use rig_test::helper::*;
 use tokio::fs;
 
@@ -13,7 +17,8 @@ use tokio::fs;
 async fn main() -> Result<(), anyhow::Error> {
     let model = REMOTE_MODELS[1];
     //let img: &str = "D:/projects/rust/cx/cx58-agent/data/3w_5.jpg";
-    let img: &str = "./data/4к_1.jpg";
+    //let img: &str = "./data/4к_1.jpg";
+    let img: &str = "./data/3w_1.jpg";
     //let prompt = "In this picture, all I see only three empty window openings.";
     let prompt = "Describe the picture!";
     descript(model, false, img, prompt).await?;
@@ -103,7 +108,6 @@ Response format (JSON only, no other text):
             ])?,
         })
         .await?;
-
 
     // Prompt the agent and print the response
     //let response = agent.prompt(image).await?;
