@@ -15,17 +15,19 @@ use tokio::fs;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let model = REMOTE_MODELS[1];
+    let is_local = false;
+    let model = REMOTE_MODELS[10];
+    //let model = LOCAL_MODELS[6];
     //let img: &str = "D:/projects/rust/cx/cx58-agent/data/3w_5.jpg";
     //let img: &str = "./data/4к_1.jpg";
-    let img: &str = "./data/3w_1.jpg";
+    let img: &str = "./data/4k_4.jpg";
     //let prompt = "In this picture, all I see only three empty window openings.";
     let prompt = "Describe the picture!";
-    descript(model, false, img, prompt).await?;
+    describe(model, is_local, img, prompt).await?;
     Ok(())
 }
 
-async fn descript(
+async fn describe(
     model: &str,
     is_local: bool,
     img: &str,
@@ -57,13 +59,14 @@ async fn descript(
 
     let system = format!(
         r#"
+You are a precise, reliable, and concise assistant.
 You are an expert in construction description.
 Your specialization is only windows, doors, radiators and empty openings for future installation of windows and doors.
 If any windows, doors, or radiators are missing and there are only bare openings, be sure to describe this in detail!
 It is necessary to describe in detail the quantity, material, condition, completeness and stage of installation of windows, doors and radiators.
 An error in determining presence or quantity is very bad!
 Don't let me down with the definitions and calculations.
-Don't print empty lines!
+Don't show empty descriptions!
 This is a photo of a construction site, so you might see exposed concrete or brick.
 If so, please describe it.
 Don't invent what you don't see!
