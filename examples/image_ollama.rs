@@ -15,9 +15,9 @@ use tokio::fs;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let is_local = false;
-    let model = REMOTE_MODELS[10];
-    //let model = LOCAL_MODELS[6];
+    let is_local = true;
+    //let model = REMOTE_MODELS[10];
+    let model = LOCAL_MODELS[6];
     //let img: &str = "D:/projects/rust/cx/cx58-agent/data/3w_5.jpg";
     //let img: &str = "./data/4к_1.jpg";
     let img: &str = "./data/4k_4.jpg";
