@@ -1,14 +1,9 @@
 // tests/test_utils.rs
 
-use rig_test::agents::types::{ClassificationResult, Intent};
+use rig_test::agents::types::{ClassificationResult, ContextField, Intent};
 
 pub fn assert_intent_matches(result: &ClassificationResult, expected: Intent) {
-    assert!(
-        std::mem::discriminant(&result.intent) == std::mem::discriminant(&expected),
-        "Expected intent {:?} but got {:?}",
-        expected,
-        result.intent
-    );
+    assert_eq!(std::mem::discriminant(&result.intent), std::mem::discriminant(&expected), "Expected intent {:?} but got {:?}", expected, result.intent);
 }
 
 pub fn assert_has_task_params(result: &ClassificationResult) {

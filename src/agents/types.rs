@@ -1,7 +1,6 @@
 // src/agents/types.rs
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ClassificationResult {
@@ -12,6 +11,7 @@ pub struct ClassificationResult {
     pub reasoning: String,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Intent {
     GetObjectTree,
     GetReportList,
@@ -69,7 +69,7 @@ pub enum Language {
 }
 
 impl Language {
-    pub fn from_str(s: &str) -> Self {
+    pub fn from_short(s: &str) -> Self {
         match s.to_lowercase().as_str() {
             "de" | "german" => Language::German,
             _ => Language::English,

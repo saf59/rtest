@@ -15,7 +15,7 @@ impl TestContext {
     pub fn new() -> Self {
         // Initialize localization
         let lang_manager = Arc::new(LocalizationManager::new().unwrap());
-        let template_manager = Arc::new(TemplateManager::new(lang_manager.clone()));
+        let template_manager = Arc::new(TemplateManager::new());
 
         // Use Ollama with FunctionGemma
         let api_base = std::env::var("OLLAMA_API_BASE")

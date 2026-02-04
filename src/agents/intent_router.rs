@@ -21,6 +21,21 @@ pub struct IntentRouter {
 // src/agents/intent_router.rs
 
 impl IntentRouter {
+    pub fn new(
+        _api_base: String,
+        model: String,
+        lang_manager: Arc<LocalizationManager>,
+        template_manager: Arc<TemplateManager>,
+    ) -> Self {
+        let client = client(false);
+
+        Self {
+            client,
+            model,
+            lang_manager,
+            template_manager,
+        }
+    }
     pub async fn classify(
         &self,
         message: &str,
@@ -49,9 +64,11 @@ impl IntentRouter {
             .build();
 
         let response = agent.prompt(&user_prompt).await?;
-
+        tracing::info!("Raw LLM Response:\n{}", response);
         // Parse JSON response
         let cleaned = self.clean_json_response(&response);
+
+        tracing::info!("Cleaned JSON:\n{}", cleaned);
 
         let result: ClassificationResult = serde_json::from_str(&cleaned)
             .map_err(|e| {

@@ -1,15 +1,15 @@
 // tests/intent_router_report_list_tests.rs
-
-use rig_test::agents::types::*;
 use crate::common::TestContext;
+use rig_test::agents::types::*;
+
 
 #[tokio::test]
 async fn test_get_report_list_missing_context() {
     let ctx = TestContext::new();
     let user_context = ctx.create_context("user-123", Language::English, None, None, None);
 
-    let result = ctx.intent_router
-        .classify("Show me photo reports", &user_context, &[])
+    let result:ClassificationResult  = ctx.intent_router
+        .classify("Show me photo reports", &user_context, &Vec::<String>::new())
         .await
         .expect("Classification failed");
 
@@ -28,8 +28,8 @@ async fn test_get_report_list_with_object_context() {
         None,
     );
 
-    let result = ctx.intent_router
-        .classify("Show me all photo reports", &user_context, &[])
+    let result:ClassificationResult  = ctx.intent_router
+        .classify("Show me all photo reports", &user_context, &Vec::<String>::new())
         .await
         .expect("Classification failed");
 
@@ -46,8 +46,8 @@ async fn test_get_report_list_with_object_identifier() {
     let ctx = TestContext::new();
     let user_context = ctx.create_context("user-123", Language::English, None, None, None);
 
-    let result = ctx.intent_router
-        .classify("Show me reports for Building A", &user_context, &[])
+    let result:ClassificationResult  = ctx.intent_router
+        .classify("Show me reports for Building A", &user_context, &Vec::<String>::new())
         .await
         .expect("Classification failed");
 
@@ -69,8 +69,8 @@ async fn test_get_report_list_last_week() {
         None,
     );
 
-    let result = ctx.intent_router
-        .classify("Show me reports from last week", &user_context, &[])
+    let result:ClassificationResult  = ctx.intent_router
+        .classify("Show me reports from last week", &user_context, &Vec::<String>::new())
         .await
         .expect("Classification failed");
 
@@ -92,8 +92,8 @@ async fn test_get_report_list_latest() {
         None,
     );
 
-    let result = ctx.intent_router
-        .classify("Show me the latest 3 reports", &user_context, &[])
+    let result:ClassificationResult  = ctx.intent_router
+        .classify("Show me the latest 3 reports", &user_context, &Vec::<String>::new())
         .await
         .expect("Classification failed");
 

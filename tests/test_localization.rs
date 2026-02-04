@@ -5,12 +5,13 @@ use std::path::{Path, PathBuf};
 
 #[test]
 fn ftl_is_valid() {
-    let content_en = include_str!("../locales/en/messages.ftl");
+/*    let content_en = include_str!("../locales/en/messages.ftl");
     check_ftl(content_en);
     let content_de = include_str!("../locales/de/messages.ftl");
     check_ftl(content_de);
+*/
     // we do not need to check txt and tera files at all - they are not FTL
-    // run_ftl_checks(Path::new("./locales")).unwrap()
+    run_ftl_checks(Path::new("./locales")).unwrap()
 }
 
 fn walk_dir(path: &Path, files: &mut Vec<PathBuf>) -> std::io::Result<()> {

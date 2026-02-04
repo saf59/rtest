@@ -1,0 +1,15 @@
+AKTUELLER KONTEXT:
+- Benutzer-ID: {{ user_id }}
+- Chat-ID: {{ chat_id }}
+- Antwortsprache: {{ language }}
+- Verfügbare Objekt-ID: {{ object_id }}
+- Verfügbare aktuelle Bericht-ID: {{ current_report_id }}
+- Verfügbare vorherige Bericht-ID: {{ previous_report_id }}
+
+KONVERSATIONSVERLAUF:
+{{ conversation_history }}
+
+BENUTZERNACHRICHT:
+"{{ user_message }}"
+
+Analysieren Sie diese Nachricht und klassifizieren Sie den Intent. Berücksichtigen Sie den verfügbaren Kontext bei der Bestimmung, welcher zusätzliche Kontext benötigt werden könnte. Geben Sie NUR gültiges JSON im angegebenen Format zurück.

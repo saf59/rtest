@@ -1,6 +1,5 @@
 use tera::{Context, Tera};
 use anyhow::Result;
-use std::sync::Arc;
 use std::collections::HashMap;
 
 const TEMPLATE_FILES: &[(&str, &str)] = &[
@@ -12,10 +11,14 @@ const TEMPLATE_FILES: &[(&str, &str)] = &[
 ];
 
 pub struct TemplateManager {
-    lang_manager: Arc<crate::localization::LocalizationManager>,
+    //lang_manager: Arc<crate::localization::LocalizationManager>,
     tera_templates: HashMap<String, HashMap<String, String>>, // lang -> template_id -> content
 }
-
+impl Default for TemplateManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl TemplateManager {
 
     fn load_templates(&mut self, lang: &str) {
@@ -34,9 +37,12 @@ impl TemplateManager {
 
         self.tera_templates.insert(lang.to_string(), lang_templates);
     }
-    pub fn new(lang_manager: Arc<crate::localization::LocalizationManager>) -> Self {
+
+
+    //pub fn new(lang_manager: Arc<crate::localization::LocalizationManager>) -> Self {
+    pub fn new() -> Self {
         let mut manager = Self {
-            lang_manager,
+            //lang_manager,
             tera_templates: HashMap::new(),
         };
 

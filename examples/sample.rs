@@ -10,9 +10,12 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::sync::mpsc;
 use uuid::Uuid;
-use rig_test::tools::CXError;
 
 const IS_LOCAL: bool = false;
+
+#[derive(Debug, thiserror::Error)]
+#[error("App error")]
+pub struct CXError;
 
 /// ============================================================================
 // EVENT TYPES FOR STREAMING

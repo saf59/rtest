@@ -1,0 +1,15 @@
+CURRENT CONTEXT:
+- User ID: {{ user_id }}
+- Chat ID: {{ chat_id }}
+- Response Language: {{ language }}
+- Available Object ID: {{ object_id }}
+- Available Current Report ID: {{ current_report_id }}
+- Available Previous Report ID: {{ previous_report_id }}
+
+CONVERSATION HISTORY:
+{{ conversation_history }}
+
+USER MESSAGE:
+"{{ user_message }}"
+
+Analyze this message and classify the intent. Consider the available context when determining what additional context might be needed. Return ONLY valid JSON matching the specified format.
