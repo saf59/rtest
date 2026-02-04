@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use unic_langid::LanguageIdentifier;
 use anyhow::Result;
-use fluent_bundle::{FluentBundle, FluentResource};
+use fluent_bundle::{FluentArgs, FluentBundle, FluentResource};
 
 const PROMPT_FILES: &[(&str, &str)] = &[
     ("intent-router-system-prompt", "intent_router_system.txt"),
@@ -16,21 +16,21 @@ pub struct LocalizationManager {
 }
 
 impl LocalizationManager {
-    pub fn new() -> Result<Self> {
+    pub fn new() -> Self {
         let mut manager = Self {
             bundles: HashMap::new(),
             prompts: HashMap::new(),
         };
 
         // Load FTL files (only simple messages)
-        manager.load_language("en", include_str!("../locales/en/messages.ftl"))?;
-        manager.load_language("de", include_str!("../locales/de/messages.ftl"))?;
+        let _ =manager.load_language("en", include_str!("../locales/en/messages.ftl"));
+        let _ =manager.load_language("de", include_str!("../locales/de/messages.ftl"));
 
         // Load prompts from separate files
-        manager.load_prompts("en")?;
-        manager.load_prompts("de")?;
+        let _ =manager.load_prompts("en");
+        let _ =manager.load_prompts("de");
 
-        Ok(manager)
+        manager
     }
     fn load_prompts(&mut self, lang: &str) -> Result<()> {
         let mut lang_prompts = HashMap::new();
@@ -93,6 +93,52 @@ impl LocalizationManager {
 
         value.to_string()
     }
+    pub fn get_msg1(&self, lang: &str, msg_id: &str, param1: &str) -> String {
+        let mut args = FluentArgs::new();
+        args.set("p1", param1);
+        self.get_msg_with_args(lang, msg_id, args)
+    }
+    pub fn get_msg2(&self, lang: &str, msg_id: &str, param1: &str, param2: &str) -> String {
+        let mut args = FluentArgs::new();
+        args.set("p1", param1);
+        args.set("p2", param2);
+        self.get_msg_with_args(lang, msg_id, args)
+    }
+    pub fn get_msg3(
+        &self,
+        lang: &str,
+        msg_id: &str,
+        param1: &str,
+        param2: &str,
+        param3: &str,
+    ) -> String {
+        let mut args = FluentArgs::new();
+        args.set("p1", param1);
+        args.set("p2", param2);
+        args.set("p3", param3);
+        self.get_msg_with_args(lang, msg_id, args)
+    }
+    /// Builds a prompt string for a specific language and parameters
+    pub fn get_msg_with_args(&self, lang: &str, msg_id: &str, args: FluentArgs) -> String {
+        let bundle = self
+            .bundles
+            .get(lang)
+            .or_else(|| self.bundles.get("en")) // Fallback to English
+            .expect("Language not found");
+
+        let msg = bundle
+            .get_message(msg_id)
+            .unwrap_or_else(|| panic!("Message '{}' not found in FTL", msg_id));
+        //.expect(&format!("Message '{}' not found in FTL", msg_id));
+
+        let pattern = msg.value().expect("Message value is empty");
+        let mut errors = vec![];
+
+        bundle
+            .format_pattern(pattern, Some(&args), &mut errors)
+            .to_string()
+    }
+
 
     pub fn get_prompt(&self, lang: &str, prompt_id: &str) -> Result<String> {
         self.prompts

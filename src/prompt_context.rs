@@ -94,7 +94,7 @@ impl ContextParser {
     /// Extracts context from prompt
     pub fn parse(&mut self, lang: &str, prompt: &str) -> Result<PromptContext, ParserError> {
         let mut context = PromptContext::new();
-        let text_manager = LocalizationManager::new().unwrap();
+        let text_manager = LocalizationManager::new();
 
         for key in PromptKey::iter() {
             match key {

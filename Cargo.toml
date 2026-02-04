@@ -32,43 +32,5 @@ fluent-syntax = "0.12.0"
 tokio = { version = "1.48.0", features = ["full","test-util"] }
 tokio-test = "0.4.5"
 uuid = { version = "1.19.0", features = ["v7"] }
-
-[[test]]
-name = "intent_router_basic_tests"
-path = "tests/intent_router_basic_tests.rs"
-
-[[test]]
-name = "intent_router_report_list_tests"
-path = "tests/intent_router_report_list_tests.rs"
-
-[[test]]
-name = "intent_router_description_tests"
-path = "tests/intent_router_description_tests.rs"
-
-[[test]]
-name = "intent_router_comparison_tests"
-path = "tests/intent_router_comparison_tests.rs"
-
-[[test]]
-name = "intent_router_rag_tests"
-path = "tests/intent_router_rag_tests.rs"
-
-[[test]]
-name = "intent_router_out_of_scope_tests"
-path = "tests/intent_router_out_of_scope_tests.rs"
-
-[[test]]
-name = "intent_router_german_tests"
-path = "tests/intent_router_german_tests.rs"
-
-[[test]]
-name = "intent_router_conversation_tests"
-path = "tests/intent_router_conversation_tests.rs"
-
-[[test]]
-name = "intent_router_edge_cases_tests"
-path = "tests/intent_router_edge_cases_tests.rs"
-
-[[test]]
-name = "intent_router_performance_tests"
-path = "tests/intent_router_performance_tests.rs"
+test-log = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }

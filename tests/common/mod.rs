@@ -14,13 +14,16 @@ pub struct TestContext {
 impl TestContext {
     pub fn new() -> Self {
         // Initialize localization
-        let lang_manager = Arc::new(LocalizationManager::new().unwrap());
+        let lang_manager = Arc::new(LocalizationManager::new());
         let template_manager = Arc::new(TemplateManager::new());
-
+        let _ = tracing_subscriber::fmt()
+            .with_test_writer() // Специальный писатель для тестов
+            .try_init();
         // Use Ollama with FunctionGemma
         let api_base = std::env::var("OLLAMA_API_BASE")
             .unwrap_or_else(|_| "http://localhost:11434".to_string());
-        let model = "functiongemma:latest".to_string();
+        let model = "qwen3:14b".to_string();
+        //let model =    "functiongemma:latest".to_string();
 
         let intent_router = IntentRouter::new(
             api_base,

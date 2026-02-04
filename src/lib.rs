@@ -1,7 +1,7 @@
 extern crate core;
 
 pub mod helper;
-//pub mod tools;
+pub mod tools;
 pub mod localization;
 pub mod prompt_context;
 pub mod agents;

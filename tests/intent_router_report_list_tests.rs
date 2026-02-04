@@ -1,7 +1,7 @@
-// tests/intent_router_report_list_tests.rs
-use crate::common::TestContext;
+#[path = "common/mod.rs"]
+mod common;
+use common::TestContext;
 use rig_test::agents::types::*;
-
 
 #[tokio::test]
 async fn test_get_report_list_missing_context() {
