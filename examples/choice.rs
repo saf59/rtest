@@ -1,11 +1,11 @@
 use rig::{client::CompletionClient, completion::Prompt};
 use rig_test::helper::*;
-use rig_test::lang::TextManager;
+use rig_test::localization::LocalizationManager;
 use std::time::Instant;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
-    let text_manager = TextManager::new();
+    let text_manager = LocalizationManager::new();
     let lang = "en";
     let model = REMOTE_MODELS[9];
     //let model = LOCAL_MODELS[5];

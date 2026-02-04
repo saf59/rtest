@@ -1,5 +1,5 @@
 use aho_corasick::{AhoCorasick, Match, MatchKind};
-use crate::lang::TextManager;
+use crate::localization::LocalizationManager;
 use strum::IntoEnumIterator;
 use strum_macros::{EnumIter, IntoStaticStr};
 use thiserror::Error;
@@ -94,7 +94,7 @@ impl ContextParser {
     /// Extracts context from prompt
     pub fn parse(&mut self, lang: &str, prompt: &str) -> Result<PromptContext, ParserError> {
         let mut context = PromptContext::new();
-        let text_manager = TextManager::new();
+        let text_manager = LocalizationManager::new().unwrap();
 
         for key in PromptKey::iter() {
             match key {
@@ -117,7 +117,7 @@ impl ContextParser {
         prompt: &str,
         context: &mut PromptContext,
         lang: &str,
-        text_manager: &TextManager,
+        text_manager: &LocalizationManager,
     ) -> Result<(), ParserError> {
         // amount_num must be present
         let num_patterns = text_manager.split_msg(lang, "amount_num");
@@ -155,7 +155,7 @@ impl ContextParser {
         prompt: &str,
         context: &mut PromptContext,
         lang: &str,
-        text_manager: &TextManager,
+        text_manager: &LocalizationManager,
     ) -> Result<(), ParserError> {
         let patterns = text_manager.split_msg(lang, "period-words");
         let pattern_refs: Vec<&str> = patterns.iter().map(|s| s.as_str()).collect();
@@ -177,7 +177,7 @@ impl ContextParser {
         prompt: &str,
         context: &mut PromptContext,
         lang: &str,
-        text_manager: &TextManager,
+        text_manager: &LocalizationManager,
     ) -> Result<(), ParserError> {
         let key_str: &'static str = key.into();
         let key_lower = format!("{}-words", key_str.to_lowercase());
