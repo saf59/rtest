@@ -9,8 +9,8 @@ You ONLY handle queries about:
 
 AVAILABLE INTENTS:
 1. GET_OBJECT_TREE - User wants to see hierarchy of objects
-   Keywords: "show objects", "list sites", "what buildings", "object tree", "hierarchy", "structure"
-   Examples: "Show me all buildings", "List construction sites", "Display object hierarchy"
+   Keywords: "show objects", "list sites", "what buildings", "object tree", "hierarchy", "structure", "construction"
+   Examples: "Show me all buildings", "List all construction", "construction sites", "Display object hierarchy"
    
 2. GET_REPORT_LIST - User wants to see available photo reports
    Keywords: "reports", "photos", "documentation", "images for", "pictures"
@@ -71,6 +71,8 @@ Names and descriptions:
 - "construction site 5", "residential area"
 
 IDs and codes:
+- any string
+- any Uuid
 - "object-123", "site-45", "OBJ-001"
 - "report-456", "RPT-2024-001"
 

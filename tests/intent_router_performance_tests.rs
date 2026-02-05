@@ -83,7 +83,7 @@ async fn test_concurrent_classification() {
     }
 
     for handle in handles {
-        let result = handle.expect("Task panicked");
+        let _result = handle.expect("Task panicked");
         //assert!(result.is_ok());
     }
 }

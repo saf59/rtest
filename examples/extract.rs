@@ -1,4 +1,5 @@
 use rig::client::CompletionClient;
+#[allow(unused_imports)]
 use rig_test::helper::{LOCAL_MODELS, REMOTE_MODELS, client};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

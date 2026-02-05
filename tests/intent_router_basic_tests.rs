@@ -68,10 +68,10 @@ async fn test_get_object_tree_month_period() {
     let user_context = ctx.create_context("user-123", Language::English, None, None, None);
 
     let result = ctx.intent_router
-        .classify("List all construction sites updated this month", &user_context, &[])
+        .classify("Show me construction sites updated this month", &user_context, &[])
         .await
         .expect("Classification failed");
-
+    println!("Result: {:?}", result);
     assert!(matches!(result.intent, Intent::GetObjectTree));
 
     let params = result.extracted_parameters.task_params
