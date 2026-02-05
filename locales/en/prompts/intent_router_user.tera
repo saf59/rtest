@@ -2,9 +2,9 @@ CURRENT CONTEXT:
 - User ID: {{ user_id }}
 - Chat ID: {{ chat_id }}
 - Response Language: {{ language }}
-- Available Object ID: {{ object_id }}
-- Available Current Report ID: {{ current_report_id }}
-- Available Previous Report ID: {{ previous_report_id }}
+- Object ID: {{ object_id }}
+- Current Report ID: {{ current_report_id }}
+- Previous Report ID: {{ previous_report_id }}
 
 CONVERSATION HISTORY:
 {{ conversation_history }}

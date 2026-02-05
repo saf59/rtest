@@ -119,9 +119,10 @@ impl IntentRouter {
                 ctx.insert("value", val);
                 self.template_manager
                     .render(lang, "status-set", ctx)
-                    .unwrap_or_else(|_| format!("{} ✓", val))
+                    .unwrap_or_else(|_| val.to_string())
+                    //.unwrap_or_else(|_| format!("{} ✓", val))
             }
-            None => self.lang_manager.get_msg(lang, "status-not-set"),
+            None => "".to_string() //self.lang_manager.get_msg(lang, "status-not-set"),
         }
     }
     fn clean_json_response(&self, response: &str) -> String {
