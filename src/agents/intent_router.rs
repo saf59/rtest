@@ -64,11 +64,10 @@ impl IntentRouter {
             .build();
 
         let response = agent.prompt(&user_prompt).await?;
-        tracing::info!("Raw LLM Response:\n{}", response);
         // Parse JSON response
         let cleaned = self.clean_json_response(&response);
 
-        tracing::info!("Cleaned JSON:\n{}", cleaned);
+        //tracing::info!("Cleaned JSON:\n{}", cleaned);
 
         let result: ClassificationResult = serde_json::from_str(&cleaned)
             .map_err(|e| {

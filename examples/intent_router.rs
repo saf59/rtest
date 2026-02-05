@@ -130,7 +130,7 @@ If the request is ambiguous or invalid:
  * ============================================================ */
 
 const TEMPERATURE: f64 = 0.0;
-const TOP_P: f32 = 0.2;
+const _TOP_P: f32 = 0.2;
 
 /* ============================================================
  * 5. Intent Router

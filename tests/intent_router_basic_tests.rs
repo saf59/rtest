@@ -1,8 +1,6 @@
 // tests/intent_router_basic_tests.rs
 
 mod common;
-mod intent_router_report_list_tests;
-
 use common::TestContext;
 use rig_test::agents::types::*;
 

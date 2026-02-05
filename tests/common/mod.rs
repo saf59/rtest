@@ -8,6 +8,7 @@ use rig_test::templating::TemplateManager;
 
 pub struct TestContext {
     pub intent_router: IntentRouter,
+    #[allow(dead_code)]
     pub lang_manager: Arc<LocalizationManager>,
 }
 

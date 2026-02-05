@@ -15,7 +15,13 @@ pub struct LocalizationManager {
     prompts: HashMap<String, HashMap<String, String>>, // lang -> prompt_id -> content
 }
 
+impl Default for LocalizationManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl LocalizationManager {
+
     pub fn new() -> Self {
         let mut manager = Self {
             bundles: HashMap::new(),
