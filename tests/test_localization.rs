@@ -54,7 +54,7 @@ fn run_ftl_checks(root: &Path) -> std::io::Result<()> {
 
     Ok(())
 }
-
+#[allow(dead_code)]
 fn check_ftl(content: &str) {
     if let Err((_res, errors)) = FluentResource::try_new(content.to_string()) {
         pretty_print_errors(content, &errors);

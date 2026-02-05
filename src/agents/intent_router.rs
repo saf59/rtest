@@ -55,7 +55,7 @@ impl IntentRouter {
             conversation_history,
             lang,
         )?;
-
+        println!("User prompt:\n{}", user_prompt);
         let agent = self.client
             .agent(&self.model)
             .preamble(&system_prompt)

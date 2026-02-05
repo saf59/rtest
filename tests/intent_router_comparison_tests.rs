@@ -14,7 +14,7 @@ async fn test_compare_reports_missing_context() {
         .classify("Compare the reports", &user_context, &[])
         .await
         .expect("Classification failed");
-
+    println!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::CompareReports));
     assert!(result.missing_context.contains(&ContextField::ObjectId));
 }
@@ -62,7 +62,7 @@ async fn test_compare_with_full_context() {
         .classify("Compare these reports", &user_context, &[])
         .await
         .expect("Classification failed");
-    println!("Classification result: {:?}", result);
+    println!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::CompareReports));
     assert!(result.missing_context.is_empty());
 }

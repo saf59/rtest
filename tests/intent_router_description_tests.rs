@@ -30,12 +30,12 @@ async fn test_describe_report_with_full_context() {
         Some("report-456".to_string()),
         None,
     );
-
+    println!("User context:{:#?}",&user_context);
     let result = ctx.intent_router
         .classify("Describe this report", &user_context, &[])
         .await
         .expect("Classification failed");
-
+    println!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::DescribeReport));
     assert!(result.missing_context.is_empty());
 }

@@ -71,7 +71,7 @@ async fn test_get_object_tree_month_period() {
         .classify("Show me construction sites updated this month", &user_context, &[])
         .await
         .expect("Classification failed");
-    println!("Result: {:?}", result);
+    println!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::GetObjectTree));
 
     let params = result.extracted_parameters.task_params
