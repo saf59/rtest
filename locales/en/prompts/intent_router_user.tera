@@ -20,6 +20,6 @@ USER MESSAGE:
 
 Analyze this message and classify the intent. 
 Check what context is missing and include it in the "missing_context" field if needed for the classified intent.
-"missing_context" MUST contains list of all missing properties.
-If no specific object or reports are mentioned, it mean you must use them from the CURRENT CONTEXT.
+"missing_context" MUST contain a list of all missing properties.
+If no specific object or reports are mentioned, it means you must use values from the CURRENT CONTEXT.
 Return ONLY valid JSON matching the specified format.                                             

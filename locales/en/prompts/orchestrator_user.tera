@@ -34,7 +34,7 @@ Based on this information, what is your next decision? Consider:
 5. Do we need multiple workers in sequence?
 6. Should we send a progress update?
 
-"missing_context" MUST contains list of all missing properties.
-If no specific object or reports are mentioned, it mean you must use them from the CURRENT CONTEXT.
+"missing_context" MUST contain a list of all missing properties.
+If no specific object or reports are mentioned, it means you must use values from the CURRENT CONTEXT.
 
 Return your decision as valid JSON matching the specified format.
