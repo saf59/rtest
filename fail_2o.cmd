@@ -1,0 +1,17 @@
+﻿cargo nextest run --no-fail-fast --test-threads=1 --^
+ rig_test::orchestrator_basic_tests test_get_object_tree_no_missing_context^
+ rig_test::orchestrator_basic_tests test_get_object_tree_with_period_filter^
+ rig_test::orchestrator_basic_tests test_out_of_scope_immediate_reject^
+ rig_test::orchestrator_basic_tests test_rag_query_immediate_execution^
+ rig_test::orchestrator_formatter_integration_tests test_full_comparison_workflow^
+ rig_test::orchestrator_formatter_integration_tests test_full_describe_workflow^
+ rig_test::orchestrator_language_tests test_english_reject_message^
+ rig_test::orchestrator_language_tests test_german_context_request^
+ rig_test::orchestrator_missing_context_tests test_compare_reports_missing_report_ids^
+ rig_test::orchestrator_missing_context_tests test_describe_report_missing_both_ids^
+ rig_test::orchestrator_missing_context_tests test_report_list_missing_object_id^
+ rig_test::orchestrator_missing_context_tests test_report_list_with_object_identifier^
+ rig_test::orchestrator_workflow_tests test_compare_workflow_step1_fetch_reports^
+ rig_test::orchestrator_workflow_tests test_compare_workflow_step2_analyze_reports^
+ rig_test::orchestrator_workflow_tests test_complete_workflow_format_and_return^
+ rig_test::orchestrator_workflow_tests test_describe_latest_workflow

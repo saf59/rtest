@@ -79,7 +79,7 @@ For ReportList worker:
     "task_params": {
       "last": true/false,
       "all": true/false,
-      "period": "Week|Month|Day|Quarter or null if not specified",
+      "period": "Week|Month|Day|Quarter",
       "amount": <number>
     }
   }

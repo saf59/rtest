@@ -1,0 +1,15 @@
+﻿cargo nextest run --no-fail-fast --test-threads=1 --^
+ rig_test::formatter_comparison_tests test_comparison_german^
+ rig_test::formatter_comparison_tests test_comparison_has_categorized_differences^
+ rig_test::formatter_comparison_tests test_comparison_quantifies_changes^
+ rig_test::formatter_comparison_tests test_comparison_severity_levels^
+ rig_test::formatter_comparison_tests test_comparison_similarity_score^
+ rig_test::formatter_comparison_tests test_format_comparison_english^
+ rig_test::formatter_description_tests test_description_contains_completion_percentage^
+ rig_test::formatter_description_tests test_format_description_english^
+ rig_test::formatter_description_tests test_format_description_german^
+ rig_test::formatter_edge_cases_tests test_comparison_identical_reports^
+ rig_test::formatter_edge_cases_tests test_comparison_very_different_reports^
+ rig_test::formatter_edge_cases_tests test_description_with_minimal_data^
+ rig_test::formatter_out_of_scope_tests test_out_of_scope_english^
+ rig_test::formatter_out_of_scope_tests test_out_of_scope_helpful_tone
