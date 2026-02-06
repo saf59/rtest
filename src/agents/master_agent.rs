@@ -65,7 +65,8 @@ impl MasterAgent {
         let (tx, rx) = mpsc::channel(100);
         
         let agent = Arc::new(self.clone());
-        tokio::spawn(async move {
+        let state = state.clone();
+        //tokio::spawn(async move {
             if let Err(e) = agent.process_request(state, request, tx.clone()).await {
                 let mut ctx = Context::new();
                 ctx.insert("error", &e.to_string());
@@ -79,7 +80,7 @@ impl MasterAgent {
                     code: "AGENT_ERROR".to_string(),
                 }).await;
             }
-        });
+        //});
         
         rx
     }
@@ -93,7 +94,7 @@ impl MasterAgent {
         let start_time = Instant::now();
         let request_id = Uuid::now_v7().to_string();
         
-        let lang = Language::from_str(&request.language);
+        let lang = Language::from_short(&request.language);
         let lang_code = lang.to_code();
         
         // Send initial progress

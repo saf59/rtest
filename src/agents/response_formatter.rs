@@ -1,16 +1,17 @@
 
-use rig::providers::openai;
+use rig::providers::{ollama, openai};
 use rig::completion::Prompt;
 use anyhow::Result;
 use tera::Context;
 use std::sync::Arc;
-
+use rig::client::CompletionClient;
+use crate::helper::client;
 use super::types::*;
 use crate::localization::LocalizationManager;
 use crate::templating::TemplateManager;
 
 pub struct ResponseFormatter {
-    client: openai::Client,
+    client: ollama::Client,
     model: String,
     lang_manager: Arc<LocalizationManager>,
     template_manager: Arc<TemplateManager>,
@@ -32,8 +33,8 @@ impl ResponseFormatter {
         };
         
         tracing::info!("Creating Response Formatter with Ollama API: {}", ollama_api_url);
-        
-        let client = openai::Client::from_url(&ollama_api_url);
+
+        let client = client(false);
         
         Self {
             client,

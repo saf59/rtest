@@ -1,6 +1,6 @@
 // src/agents/intent_router.rs
 
-use rig::{completion::Prompt}; // Ollama uses OpenAI-compatible API
+use rig::completion::Prompt; // Ollama uses OpenAI-compatible API
 use anyhow::Result;
 use tera::Context;
 use std::sync::Arc;

@@ -1,16 +1,17 @@
 
-use rig::providers::openai;
+use rig::providers::ollama;
 use rig::completion::Prompt;
 use anyhow::Result;
 use tera::Context;
+use rig::client::CompletionClient;
 use std::sync::Arc;
-
+use crate::helper::client;
 use super::types::*;
 use crate::localization::LocalizationManager;
 use crate::templating::TemplateManager;
 
 pub struct Orchestrator {
-    client: openai::Client,
+    client: ollama::Client,
     model: String,
     lang_manager: Arc<LocalizationManager>,
     template_manager: Arc<TemplateManager>,
@@ -23,17 +24,9 @@ impl Orchestrator {
         lang_manager: Arc<LocalizationManager>,
         template_manager: Arc<TemplateManager>,
     ) -> Self {
-        let ollama_api_url = if api_base.ends_with("/v1") {
-            api_base
-        } else if api_base.ends_with('/') {
-            format!("{}v1", api_base)
-        } else {
-            format!("{}/v1", api_base)
-        };
-        
-        tracing::info!("Creating Orchestrator with Ollama API: {}", ollama_api_url);
-        
-        let client = openai::Client::from_url(&ollama_api_url);
+        tracing::info!("Creating Orchestrator");
+
+        let client = client(false);
         
         Self {
             client,
