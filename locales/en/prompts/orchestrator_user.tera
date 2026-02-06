@@ -4,12 +4,18 @@ Confidence: {{ confidence }}
 Original Message: "{{ original_message }}"
 
 CONTEXT STATUS:
-User ID: {{ user_id }} ✓
-Chat ID: {{ chat_id }} ✓
-Language: {{ language }} ✓
-Object ID: {{ object_id }}
-Current Report ID: {{ current_report_id }}
-Previous Report ID: {{ previous_report_id }}
+User ID: {{ user_id }} 
+Chat ID: {{ chat_id }} 
+Language: {{ language }} 
+{% if object_id -%}
+- Object ID: {{ object_id }} 
+{% endif -%}
+{% if current_report_id -%}
+- Current Report ID: {{ current_report_id }} 
+{% endif -%}
+{% if previous_report_id -%}
+- Previous Report ID: {{ previous_report_id }}                                                   
+{% endif %}
 
 EXTRACTED PARAMETERS:
 {{ extracted_parameters }}
@@ -27,5 +33,8 @@ Based on this information, what is your next decision? Consider:
 4. Are we ready to execute a worker?
 5. Do we need multiple workers in sequence?
 6. Should we send a progress update?
+
+"missing_context" MUST contains list of all missing properties.
+If no specific object or reports are mentioned, it mean you must use them from the CURRENT CONTEXT.
 
 Return your decision as valid JSON matching the specified format.

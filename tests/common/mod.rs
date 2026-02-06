@@ -6,6 +6,9 @@ use rig_test::agents::types::*;
 use rig_test::localization::LocalizationManager;
 use rig_test::templating::TemplateManager;
 
+pub mod formatter_test_helpers;
+pub mod orchestrator_test_helpers;
+
 pub struct TestContext {
     pub intent_router: IntentRouter,
     #[allow(dead_code)]

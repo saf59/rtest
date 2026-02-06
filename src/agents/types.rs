@@ -60,6 +60,126 @@ pub enum ContextField {
     CurrentReportId,
     PreviousReportId,
 }
+#[derive(Debug, Clone)]
+pub struct WorkerRequest {
+    pub worker_type: WorkerType,
+    pub parameters: WorkerParameters,
+    pub context: WorkerContext,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum WorkerParameters {
+    ObjectTree(TaskParameters),
+    ReportList {
+        object_id: String,
+        task_params: TaskParameters,
+    },
+    VisionAnalysis {
+        report_id: String,
+    },
+    Comparison {
+        report_id_1: String,
+        report_id_2: String,
+    },
+    RagQuery {
+        query: String,
+    },
+}
+// SSE Stream Chunks
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "chunk_type", content = "data")]
+pub enum StreamChunk {
+    Progress {
+        status: String,
+        percent: u8,
+        message: String,
+    },
+    ObjectTree {
+        data: serde_json::Value,
+    },
+    ReportList {
+        data: Vec<serde_json::Value>,
+    },
+    Description {
+        report_id: String,
+        text: String,
+        is_complete: bool,
+    },
+    Comparison {
+        data: serde_json::Value,
+    },
+    TextChunk {
+        content: String,
+        language: String,
+    },
+    Error {
+        message: String,
+        code: String,
+    },
+    Complete {
+        total_time_ms: u64,
+    },
+}
+
+// Orchestrator Decision
+#[derive(Debug, Clone)]
+pub enum OrchestratorDecision {
+    ExecuteWorker(WorkerRequest),
+    RequestContextFromUser {
+        missing_field: ContextField,
+        prompt: String,
+        suggestions: Vec<String>,
+    },
+    SendProgress {
+        status: String,
+        percent: u8,
+        message: String,
+    },
+    FormatAndReturn {
+        worker_results: Vec<WorkerResponse>,
+    },
+    Reject {
+        reason: String,
+        message: String,
+    },
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum WorkerType {
+    ObjectTree,
+    ReportList,
+    VisionAnalysis,
+    Comparison,
+    RagRetrieval,
+}
+
+#[derive(Debug, Clone)]
+pub struct WorkerContext {
+    pub user_id: String,
+    pub language: Language,
+    pub request_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkerResponse {
+    pub worker_type: WorkerType,
+    pub status: WorkerStatus,
+    pub data: serde_json::Value,
+    pub metadata: WorkerMetadata,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum WorkerStatus {
+    Success,
+    PartialSuccess,
+    Failed(String),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WorkerMetadata {
+    pub execution_time_ms: u64,
+    pub data_source: String,
+    pub cache_hit: bool,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum Language {
     #[serde(rename = "en")]
@@ -90,3 +210,33 @@ impl Language {
         }
     }
 }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AgentRequest {
+    pub message: String,
+    pub user_id: String,
+    pub chat_id: String,
+    pub language: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub object_id: Option<String>,
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    //pub session_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prev_leaf: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub next_leaf: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<serde_json::Value>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AppState {
+    pub ai_config: AiConfig,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AiConfig {
+    pub url: String,
+    pub text_model: String,
+    pub vision_model: String,
+    pub chat_model: String,
+    pub agent_secret: String
+}
+

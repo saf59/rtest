@@ -14,6 +14,7 @@ async fn test_get_report_list_missing_context() {
         .expect("Classification failed");
     println!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::GetReportList));
+    // *** object_identifier: Some("".to_string()), TODO remove empty string
     assert!(result.missing_context.contains(&ContextField::ObjectId));
 }
 

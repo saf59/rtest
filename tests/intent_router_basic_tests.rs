@@ -72,8 +72,9 @@ async fn test_get_object_tree_month_period() {
         .await
         .expect("Classification failed");
     println!("Classification result: {:#?}", result);
+    // *** assertion failed: matches!(result.intent, Intent::GetObjectTree)
+    // but the intent is actually GetReportList
     assert!(matches!(result.intent, Intent::GetObjectTree));
-
     let params = result.extracted_parameters.task_params
         .expect("Task params should be present");
     assert!(matches!(params.period, Some(Period::Month)));

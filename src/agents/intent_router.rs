@@ -122,7 +122,8 @@ impl IntentRouter {
                     .unwrap_or_else(|_| val.to_string())
                     //.unwrap_or_else(|_| format!("{} ✓", val))
             }
-            None => "".to_string() //self.lang_manager.get_msg(lang, "status-not-set"),
+            None => self.lang_manager.get_msg(lang, "status-not-set"),
+            //None => "".to_string()
         }
     }
     fn clean_json_response(&self, response: &str) -> String {

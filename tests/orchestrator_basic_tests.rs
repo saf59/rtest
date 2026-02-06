@@ -1,0 +1,151 @@
+
+mod common;
+
+use common::orchestrator_test_helpers::OrchestratorTestContext;
+use rig_test::agents::types::*;
+use anyhow::Result;
+
+#[tokio::test]
+async fn test_get_object_tree_no_missing_context() -> Result<()> {
+    let ctx = OrchestratorTestContext::new();
+    
+    // Classification for "show all buildings"
+    let classification = ctx.create_classification(
+        Intent::GetObjectTree,
+        0.95,
+        Some(TaskParameters {
+            last: false,
+            all: true,
+            period: None,
+            amount: None,
+        }),
+        None,
+        vec![], // No missing context
+    );
+    
+    let user_context = ctx.create_context(Language::English, None, None, None);
+    let worker_results = vec![];
+    
+    let decision = ctx.orchestrator
+        .decide_next_step(
+            &classification,
+            &user_context,
+            "show all buildings",
+            &worker_results,
+        )
+        .await?;
+    
+    // Should execute ObjectTree worker immediately
+    match decision {
+        OrchestratorDecision::ExecuteWorker(worker_req) => {
+            assert!(matches!(worker_req.worker_type, WorkerType::ObjectTree));
+            match worker_req.parameters {
+                WorkerParameters::ObjectTree(params) => {
+                    assert_eq!(params.all, true);
+                    assert_eq!(params.last, false);
+                }
+                _ => panic!("Expected ObjectTree parameters"),
+            }
+        }
+        _ => panic!("Expected ExecuteWorker decision, got: {:?}", decision),
+    }
+    
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_get_object_tree_with_period_filter() -> Result<()> {
+    let ctx = OrchestratorTestContext::new();
+    
+    let classification = ctx.create_classification(
+        Intent::GetObjectTree,
+        0.92,
+        Some(TaskParameters {
+            last: true,
+            all: false,
+            period: Some(Period::Week),
+            amount: None,
+        }),
+        None,
+        vec![],
+    );
+    
+    let user_context = ctx.create_context(Language::English, None, None, None);
+    
+    let decision = ctx.orchestrator
+        .decide_next_step(&classification, &user_context, "objects changed last week", &[])
+        .await?;
+    
+    match decision {
+        OrchestratorDecision::ExecuteWorker(worker_req) => {
+            match worker_req.parameters {
+                WorkerParameters::ObjectTree(params) => {
+                    assert_eq!(params.last, true);
+                    assert!(matches!(params.period, Some(Period::Week)));
+                }
+                _ => panic!("Expected ObjectTree parameters"),
+            }
+        }
+        _ => panic!("Expected ExecuteWorker decision"),
+    }
+    
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_out_of_scope_immediate_reject() -> Result<()> {
+    let ctx = OrchestratorTestContext::new();
+    
+    let classification = ctx.create_classification(
+        Intent::OutOfScope,
+        0.98,
+        None,
+        None,
+        vec![],
+    );
+    
+    let user_context = ctx.create_context(Language::English, None, None, None);
+    
+    let decision = ctx.orchestrator
+        .decide_next_step(&classification, &user_context, "what's the weather", &[])
+        .await?;
+    
+    // Should reject immediately for out of scope
+    match decision {
+        OrchestratorDecision::Reject { reason, message } => {
+            assert!(message.len() > 0);
+        }
+        _ => panic!("Expected Reject decision for out of scope"),
+    }
+    
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_rag_query_immediate_execution() -> Result<()> {
+    let ctx = OrchestratorTestContext::new();
+    
+    let classification = ctx.create_classification(
+        Intent::RagQuery,
+        0.90,
+        None,
+        None,
+        vec![],
+    );
+    
+    let user_context = ctx.create_context(Language::English, None, None, None);
+    
+    let decision = ctx.orchestrator
+        .decide_next_step(&classification, &user_context, "what can you do", &[])
+        .await?;
+    
+    // RAG query requires no context, should execute immediately
+    match decision {
+        OrchestratorDecision::ExecuteWorker(worker_req) => {
+            assert!(matches!(worker_req.worker_type, WorkerType::RagRetrieval));
+        }
+        _ => panic!("Expected ExecuteWorker for RAG query"),
+    }
+    
+    Ok(())
+}

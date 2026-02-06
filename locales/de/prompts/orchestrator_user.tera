@@ -4,12 +4,18 @@ Confidence: {{ confidence }}
 Originalnachricht: "{{ original_message }}"
 
 KONTEXT-STATUS:
-Benutzer-ID: {{ user_id }} ✓
-Chat-ID: {{ chat_id }} ✓
-Sprache: {{ language }} ✓
-Objekt-ID: {{ object_id }}
-Aktuelle Bericht-ID: {{ current_report_id }}
-Vorherige Bericht-ID: {{ previous_report_id }}
+Benutzer-ID: {{ user_id }} 
+Chat-ID: {{ chat_id }} 
+Sprache: {{ language }} 
+{% if object_id -%}
+- Objekt-ID: {{ object_id }} 
+{% endif -%}
+{% if current_report_id -%}
+- Aktuelle Bericht-ID: {{ current_report_id }} 
+{% endif -%}
+{% if previous_report_id -%}
+- Vorherige Bericht-ID: {{ previous_report_id }} 
+{% endif %}
 
 EXTRAHIERTE PARAMETER:
 {{ extracted_parameters }}
@@ -27,5 +33,8 @@ Basierend auf diesen Informationen, was ist Ihre nächste Entscheidung? Berücks
 4. Sind wir bereit, einen Worker auszuführen?
 5. Benötigen wir mehrere Worker nacheinander?
 6. Sollten wir ein Fortschritts-Update senden?
+
+"missing_context" MUSS eine Liste aller fehlenden Eigenschaften enthalten.
+Wenn keine spezifischen Objekte oder Berichte erwähnt werden, bedeutet dies, dass Sie diese aus dem AKTUELLEN KONTEXT verwenden müssen. 
 
 Geben Sie Ihre Entscheidung als gültiges JSON im angegebenen Format zurück.
