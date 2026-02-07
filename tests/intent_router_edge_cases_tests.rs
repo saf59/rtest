@@ -83,7 +83,7 @@ async fn test_very_specific_date_range() {
         )
         .await
         .expect("Classification failed");
-
+    println!("Result: {:?}", &result);
     assert!(matches!(result.intent, Intent::GetReportList));
     // Should extract time reference - TODO: implement detailed date range extraction
     // assert!(result.extracted_parameters.time_reference.is_some());

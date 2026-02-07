@@ -115,7 +115,7 @@ Return ONLY a valid JSON object (no markdown code blocks, no explanation):
 CLASSIFICATION RULES:
 1. If query mentions anything clearly outside construction domain → OUT_OF_SCOPE
 2. If query is unclear or could mean multiple things → AMBIGUOUS
-3. Comparison ALWAYS requires TWO distinct time points or reports
+3. COMPARE_REPORTS ALWAYS requires TWO distinct time points or reports
 4. "Latest", "recent", "newest" implies last: true
 5. Specific dates/times should be captured in time_reference
 6. If user mentions object by name, capture in object_identifier

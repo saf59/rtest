@@ -144,7 +144,7 @@ async fn test_compare_reports_missing_report_ids() -> Result<()> {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
             assert!(matches!(worker_req.worker_type, WorkerType::ReportList));
             match worker_req.parameters {
-                WorkerParameters::ReportList { object_id, task_params } => {
+                WorkerParameters::GetReportList { object_id, task_params } => {
                     assert_eq!(object_id, "obj-123");
                     assert_eq!(task_params.amount, Some(2));
                 }

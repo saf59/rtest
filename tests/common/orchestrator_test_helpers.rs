@@ -15,11 +15,12 @@ impl OrchestratorTestContext {
     pub fn new() -> Self {
         let lang_manager = Arc::new(LocalizationManager::new());
         let template_manager = Arc::new(TemplateManager::new());
-        
+        let _ = tracing_subscriber::fmt()
+            .with_test_writer() // Специальный писатель для тестов
+            .try_init();
         let api_base = std::env::var("OLLAMA_API_BASE")
             .unwrap_or_else(|_| "http://localhost:11434".to_string());
-        let model = std::env::var("OLLAMA_MODEL")
-            .unwrap_or_else(|_| "functiongemma:latest".to_string());
+        let model = "qwen3:14b".to_string();
         
         let orchestrator = Orchestrator::new(
             api_base,

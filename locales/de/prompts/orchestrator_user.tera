@@ -34,7 +34,4 @@ Basierend auf diesen Informationen, was ist Ihre nächste Entscheidung? Berücks
 5. Benötigen wir mehrere Worker nacheinander?
 6. Sollten wir ein Fortschritts-Update senden?
 
-"missing_context" MUSS eine Liste aller fehlenden Eigenschaften enthalten.
-Wenn keine spezifischen Objekte oder Berichte erwähnt werden, bedeutet dies, dass Sie diese aus dem AKTUELLEN KONTEXT verwenden müssen. 
-
 Geben Sie Ihre Entscheidung als gültiges JSON im angegebenen Format zurück.

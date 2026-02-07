@@ -59,7 +59,7 @@ impl Orchestrator {
             lang,
         )?;
         
-        tracing::debug!("Orchestrator - Prompt: {}", prompt);
+        tracing::info!("Orchestrator - Prompt: {}", prompt);
         
         let agent = self.client
             .agent(&self.model)
@@ -173,9 +173,10 @@ impl Orchestrator {
                 ctx.insert("value", val);
                 self.template_manager
                     .render(lang, "status-set", ctx)
-                    .unwrap_or_else(|_| format!("{} ✓", val))
+                    .unwrap_or_else(|_| val.to_string())
             }
-            None => self.lang_manager.get_msg(lang, "status-not-set"),
+            //None => self.lang_manager.get_msg(lang, "status-not-set"),
+            None => "".to_string(),
         }
     }
     

@@ -58,9 +58,9 @@ SCHRITT 3 - VORBEREITUNG DER WORKER-ANFRAGE:
 
 Angemessene WorkerParameters basierend auf:
 
-Für ObjectTree Worker:
+Für GetObjectTree Worker:
 {
-  "worker_type": "ObjectTree",
+  "worker_type": "GetObjectTree",
   "parameters": {
     "task_params": {
       "last": <aus Klassifizierung>,
@@ -71,9 +71,9 @@ Für ObjectTree Worker:
   }
 }
 
-Für ReportList Worker:
+Für GetReportList Worker:
 {
-  "worker_type": "ReportList",
+  "worker_type": "GetReportList",
   "parameters": {
     "object_id": "<aufgelöste object_id>",
     "task_params": {
@@ -85,17 +85,17 @@ Für ReportList Worker:
   }
 }
 
-Für VisionAnalysis Worker:
+Für DescribeReport Worker:
 {
-  "worker_type": "VisionAnalysis",
+  "worker_type": "DescribeReport",
   "parameters": {
     "report_id": "<aufgelöste report_id>"
   }
 }
 
-Für Comparison Worker:
+Für CompareReports Worker:
 {
-  "worker_type": "Comparison",
+  "worker_type": "CompareReports",
   "parameters": {
     "report_id_1": "<erster Bericht>",
     "report_id_2": "<zweiter Bericht>"
@@ -115,17 +115,17 @@ SCHRITT 4 - MULTI-WORKER-ORCHESTRIERUNG:
 Einige Intents erfordern mehrere Worker nacheinander:
 
 Beispiel 1: Letzte zwei Berichte vergleichen (keine Bericht-IDs verfügbar)
-1. ReportList Worker ausführen (amount: 2, last: true)
+1. GetReportList Worker ausführen (amount: 2, last: true)
 2. Auf Antwort mit Bericht-IDs warten
-3. VisionAnalysis Worker parallel für beide Berichte ausführen
+3. DescribeReport Worker parallel für beide Berichte ausführen
 4. Auf beide Beschreibungen warten
-5. Comparison Worker mit beiden Beschreibungen ausführen
+5. CompareReports Worker mit beiden Beschreibungen ausführen
 6. Zur Formatierung zurückkehren
 
 Beispiel 2: Neuesten Bericht beschreiben (keine Bericht-ID verfügbar)
-1. ReportList Worker ausführen (amount: 1, last: true)
+1. GetReportList Worker ausführen (amount: 1, last: true)
 2. Auf Antwort mit Bericht-ID warten
-3. VisionAnalysis Worker ausführen
+3. DescribeReport Worker ausführen
 4. Zur Formatierung zurückkehren
 
 SCHRITT 5 - FORTSCHRITTS-UPDATES:
@@ -158,7 +158,7 @@ Für Worker-Ausführung:
   "decision": "ExecuteWorker",
   "reasoning": "Haben allen erforderlichen Kontext, bereit Objektbaum abzurufen",
   "action_data": {
-    "worker_type": "ObjectTree|ReportList|VisionAnalysis|Comparison|RagRetrieval",
+    "worker_type": "GetObjectTree|GetReportList|DescribeReport|CompareReports|RagRetrieval",
     "parameters": {
       // Worker-spezifische Parameter
     }

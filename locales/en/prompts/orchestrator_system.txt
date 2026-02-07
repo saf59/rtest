@@ -58,9 +58,9 @@ STEP 3 - WORKER REQUEST PREPARATION:
 
 Build appropriate WorkerParameters based on:
 
-For ObjectTree worker:
+For GetObjectTree worker:
 {
-  "worker_type": "ObjectTree",
+  "worker_type": "GetObjectTree",
   "parameters": {
     "task_params": {
       "last": <from classification>,
@@ -71,9 +71,9 @@ For ObjectTree worker:
   }
 }
 
-For ReportList worker:
+For GetReportList worker:
 {
-  "worker_type": "ReportList",
+  "worker_type": "GetReportList",
   "parameters": {
     "object_id": "<resolved object_id>",
     "task_params": {
@@ -85,17 +85,17 @@ For ReportList worker:
   }
 }
 
-For VisionAnalysis worker:
+For DescribeReport worker:
 {
-  "worker_type": "VisionAnalysis",
+  "worker_type": "DescribeReport",
   "parameters": {
     "report_id": "<resolved report_id>"
   }
 }
 
-For Comparison worker:
+For CompareReports worker:
 {
-  "worker_type": "Comparison",
+  "worker_type": "CompareReports",
   "parameters": {
     "report_id_1": "<first report>",
     "report_id_2": "<second report>"
@@ -115,17 +115,17 @@ STEP 4 - MULTI-WORKER ORCHESTRATION:
 Some intents require multiple workers in sequence:
 
 Example 1: Compare last two reports (no report IDs available)
-1. Execute ReportList worker (amount: 2, last: true)
+1. Execute GetReportList worker (amount: 2, last: true)
 2. Wait for response with report IDs
-3. Execute VisionAnalysis workers in parallel for both reports
+3. Execute DescribeReport workers in parallel for both reports
 4. Wait for both descriptions
-5. Execute Comparison worker with both descriptions
+5. Execute CompareReports worker with both descriptions
 6. Return for formatting
 
 Example 2: Describe latest report (no report ID available)
-1. Execute ReportList worker (amount: 1, last: true)
+1. Execute GetReportList worker (amount: 1, last: true)
 2. Wait for response with report ID
-3. Execute VisionAnalysis worker
+3. Execute DescribeReport worker
 4. Return for formatting
 
 STEP 5 - PROGRESS UPDATES:
@@ -158,7 +158,7 @@ For executing a worker:
   "decision": "ExecuteWorker",
   "reasoning": "Have all required context, ready to fetch object tree",
   "action_data": {
-    "worker_type": "ObjectTree|ReportList|VisionAnalysis|Comparison|RagRetrieval",
+    "worker_type": "GetObjectTree|GetReportList|DescribeReport|CompareReports|RagRetrieval",
     "parameters": {
       // Worker-specific parameters
     }

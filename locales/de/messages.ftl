@@ -37,7 +37,7 @@ context-request-previous-report = Mit welchem vorherigen Bericht möchten Sie ve
 
 # UI Messages
 status-not-set = NICHT GESETZT
-status-set = {$value} ✓
+status-set = {$value}
 no-conversation-history = Keine vorherige Konversation
 no-worker-results = Noch keine Worker ausgeführt
 worker-result-summary = {$worker_type}: {$status} ({$execution_time}ms)

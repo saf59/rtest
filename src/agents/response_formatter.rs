@@ -1,5 +1,5 @@
 
-use rig::providers::{ollama, openai};
+use rig::providers::ollama;
 use rig::completion::Prompt;
 use anyhow::Result;
 use tera::Context;

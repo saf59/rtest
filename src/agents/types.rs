@@ -68,15 +68,15 @@ pub struct WorkerRequest {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum WorkerParameters {
-    ObjectTree(TaskParameters),
-    ReportList {
+    GetObjectTree(TaskParameters),
+    GetReportList {
         object_id: String,
         task_params: TaskParameters,
     },
-    VisionAnalysis {
+    DescribeReport {
         report_id: String,
     },
-    Comparison {
+    CompareReports {
         report_id_1: String,
         report_id_2: String,
     },

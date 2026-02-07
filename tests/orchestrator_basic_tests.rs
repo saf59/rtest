@@ -20,12 +20,12 @@ async fn test_get_object_tree_no_missing_context() -> Result<()> {
             amount: None,
         }),
         None,
-        vec![], // No missing context
+        vec![ContextField::ObjectId,ContextField::CurrentReportId,ContextField::PreviousReportId], // No missing context
     );
     
     let user_context = ctx.create_context(Language::English, None, None, None);
     let worker_results = vec![];
-    
+    tracing::info!("User context: {:?}", user_context);
     let decision = ctx.orchestrator
         .decide_next_step(
             &classification,
@@ -34,13 +34,13 @@ async fn test_get_object_tree_no_missing_context() -> Result<()> {
             &worker_results,
         )
         .await?;
-    
+    tracing::info!("Orchestrator decision: {:?}", decision);
     // Should execute ObjectTree worker immediately
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
             assert!(matches!(worker_req.worker_type, WorkerType::ObjectTree));
             match worker_req.parameters {
-                WorkerParameters::ObjectTree(params) => {
+                WorkerParameters::GetObjectTree(params) => {
                     assert_eq!(params.all, true);
                     assert_eq!(params.last, false);
                 }
@@ -79,7 +79,7 @@ async fn test_get_object_tree_with_period_filter() -> Result<()> {
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
             match worker_req.parameters {
-                WorkerParameters::ObjectTree(params) => {
+                WorkerParameters::GetObjectTree(params) => {
                     assert_eq!(params.last, true);
                     assert!(matches!(params.period, Some(Period::Week)));
                 }
