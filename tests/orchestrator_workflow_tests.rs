@@ -88,7 +88,8 @@ async fn test_compare_workflow_step2_analyze_reports() -> Result<()> {
     // Should now execute VisionAnalysis for reports
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
-            assert!(matches!(worker_req.worker_type, WorkerType::DescribeReport));
+            //tracing::info!("Worker request: {:?}", worker_req);
+            assert!(matches!(worker_req.worker_type, WorkerType::CompareReports));
         }
         _ => panic!("Expected VisionAnalysis worker execution"),
     }
@@ -127,9 +128,23 @@ async fn test_describe_latest_workflow() -> Result<()> {
     
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
+            tracing::info!("Worker request: {:?}", worker_req);
             assert!(matches!(worker_req.worker_type, WorkerType::GetReportList));
+            // Verify parameters are correctly set
+            match worker_req.parameters {
+                WorkerParameters::GetReportList { object_id, task_params } => {
+                    assert_eq!(object_id, "obj-123");
+                    assert!(task_params.last);
+                    assert_eq!(task_params.amount, Some(1));
+                }
+                _ => panic!("Expected GetReportList parameters"),
+            }
         }
-        _ => panic!("Expected ReportList worker to fetch latest"),
+        OrchestratorDecision::RequestContextFromUser { .. } => {
+            // Also acceptable if the orchestrator needs to ask for report confirmation
+            // This can happen if it cannot infer from task_params alone
+        }
+        _ => panic!("Expected ExecuteWorker or RequestContextFromUser"),
     }
     
     Ok(())

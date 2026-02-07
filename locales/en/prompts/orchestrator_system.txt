@@ -25,7 +25,12 @@ GET_REPORT_LIST:
 
 DESCRIBE_REPORT:
 - Required: object_id, current_report_id
-- Decision: If either is in missing_context, request from user or infer from query
+- Decision logic:
+  - If current_report_id is in missing_context AND object_id is available:
+    - Check task_params: if last=true or all=true → ExecuteWorker GetReportList first
+    - Else if report_references in extracted_parameters (e.g., "latest") → ExecuteWorker GetReportList
+    - Else → Request context from user (don't know which report to describe)
+  - If object_id is in missing_context → Request context from user
 
 COMPARE_REPORTS:
 - Required: object_id, current_report_id, previous_report_id
@@ -102,9 +107,9 @@ For CompareReports worker:
   }
 }
 
-For RagRetrieval worker:
+For RagQuery worker:
 {
-  "worker_type": "RagRetrieval",
+  "worker_type": "RagQuery",
   "parameters": {
     "query": "<original user query>"
   }
@@ -158,7 +163,7 @@ For executing a worker:
   "decision": "ExecuteWorker",
   "reasoning": "Have all required context, ready to fetch object tree",
   "action_data": {
-    "worker_type": "GetObjectTree|GetReportList|DescribeReport|CompareReports|RagRetrieval",
+    "worker_type": "GetObjectTree|GetReportList|DescribeReport|CompareReports|RagQuery",
     "parameters": {
       // Worker-specific parameters
     }
@@ -167,7 +172,7 @@ For executing a worker:
 
 For requesting context from user:
 {
-  "decision": "RequestContext",
+  "decision": "RequestContextFromUser",
   "reasoning": "Need object_id to fetch reports",
   "action_data": {
     "missing_field": "ObjectId|CurrentReportId|PreviousReportId",
@@ -207,7 +212,7 @@ For rejecting request:
 DECISION PRIORITY:
 1. If OUT_OF_SCOPE intent → Reject immediately
 2. If AMBIGUOUS intent → Request clarification
-3. If missing required context and can't infer → RequestContext
+3. If missing required context and can't infer → RequestContextFromUser
 4. If can infer context → ExecuteWorker to resolve
 5. If have all context → ExecuteWorker for main task
 6. If workers completed → FormatAndReturn

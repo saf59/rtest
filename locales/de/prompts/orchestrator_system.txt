@@ -25,7 +25,12 @@ GET_REPORT_LIST:
 
 DESCRIBE_REPORT:
 - Erforderlich: object_id, current_report_id
-- Entscheidung: Wenn eines fehlt, muss möglicherweise angefordert oder aus Anfrage abgeleitet werden
+- Entscheidungslogik:
+  - Wenn current_report_id fehlt UND object_id verfügbar ist:
+    - Prüfe task_params: wenn last=true oder all=true → ExecuteWorker GetReportList zuerst
+    - Sonst wenn report_references in extracted_parameters (z.B., "neueste") → ExecuteWorker GetReportList
+    - Sonst → Kontext vom Benutzer anfordern (unbekannt welcher Bericht beschrieben werden soll)
+  - Wenn object_id fehlt → Kontext vom Benutzer anfordern
 
 COMPARE_REPORTS:
 - Erforderlich: object_id, current_report_id, previous_report_id
@@ -102,9 +107,9 @@ Für CompareReports Worker:
   }
 }
 
-Für RagRetrieval Worker:
+Für RagQuery Worker:
 {
-  "worker_type": "RagRetrieval",
+  "worker_type": "RagQuery",
   "parameters": {
     "query": "<ursprüngliche Benutzeranfrage>"
   }
@@ -158,7 +163,7 @@ Für Worker-Ausführung:
   "decision": "ExecuteWorker",
   "reasoning": "Haben allen erforderlichen Kontext, bereit Objektbaum abzurufen",
   "action_data": {
-    "worker_type": "GetObjectTree|GetReportList|DescribeReport|CompareReports|RagRetrieval",
+    "worker_type": "GetObjectTree|GetReportList|DescribeReport|CompareReports|RagQuery",
     "parameters": {
       // Worker-spezifische Parameter
     }
@@ -167,7 +172,7 @@ Für Worker-Ausführung:
 
 Für Kontext-Anforderung vom Benutzer:
 {
-  "decision": "RequestContext",
+  "decision": "RequestContextFromUser",
   "reasoning": "Benötige object_id um Berichte abzurufen",
   "action_data": {
     "missing_field": "ObjectId|CurrentReportId|PreviousReportId",
@@ -207,7 +212,7 @@ Für Anfrage ablehnen:
 ENTSCHEIDUNGSPRIORITÄT:
 1. Wenn OUT_OF_SCOPE Intent → Sofort ablehnen
 2. Wenn AMBIGUOUS Intent → Um Klärung bitten
-3. Wenn erforderlicher Kontext fehlt und nicht ableitbar → RequestContext
+3. Wenn erforderlicher Kontext fehlt und nicht ableitbar → RequestContextFromUser
 4. Wenn Kontext ableitbar → ExecuteWorker zum Auflösen
 5. Wenn gesamter Kontext vorhanden → ExecuteWorker für Hauptaufgabe
 6. Wenn Worker abgeschlossen → FormatAndReturn
