@@ -33,12 +33,12 @@ async fn test_get_object_tree_no_missing_context() -> Result<()> {
             "show all buildings",
             &worker_results,
         )
-        .await?;
+        .await;
     tracing::info!("Orchestrator decision: {:?}", decision);
     // Should execute ObjectTree worker immediately
     match decision {
-        OrchestratorDecision::ExecuteWorker(worker_req) => {
-            assert!(matches!(worker_req.worker_type, WorkerType::ObjectTree));
+        Ok(OrchestratorDecision::ExecuteWorker(worker_req)) => {
+            assert!(matches!(worker_req.worker_type, WorkerType::GetObjectTree));
             match worker_req.parameters {
                 WorkerParameters::GetObjectTree(params) => {
                     assert_eq!(params.all, true);
@@ -142,7 +142,7 @@ async fn test_rag_query_immediate_execution() -> Result<()> {
     // RAG query requires no context, should execute immediately
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
-            assert!(matches!(worker_req.worker_type, WorkerType::RagRetrieval));
+            assert!(matches!(worker_req.worker_type, WorkerType::RagQuery));
         }
         _ => panic!("Expected ExecuteWorker for RAG query"),
     }

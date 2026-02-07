@@ -144,11 +144,11 @@ pub enum OrchestratorDecision {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum WorkerType {
-    ObjectTree,
-    ReportList,
-    VisionAnalysis,
-    Comparison,
-    RagRetrieval,
+    GetObjectTree,
+    GetReportList,
+    DescribeReport,
+    CompareReports,
+    RagQuery,
 }
 
 #[derive(Debug, Clone)]

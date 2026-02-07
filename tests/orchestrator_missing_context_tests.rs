@@ -142,7 +142,7 @@ async fn test_compare_reports_missing_report_ids() -> Result<()> {
     // Should execute ReportList worker to fetch last 2 reports
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
-            assert!(matches!(worker_req.worker_type, WorkerType::ReportList));
+            assert!(matches!(worker_req.worker_type, WorkerType::GetReportList));
             match worker_req.parameters {
                 WorkerParameters::GetReportList { object_id, task_params } => {
                     assert_eq!(object_id, "obj-123");

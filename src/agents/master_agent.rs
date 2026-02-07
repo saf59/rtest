@@ -243,27 +243,27 @@ impl MasterAgent {
         
         // Mock implementation - replace with actual worker calls
         let data = match request.worker_type {
-            WorkerType::ObjectTree => {
+            WorkerType::GetObjectTree => {
                 serde_json::json!({
                     "objects": []
                 })
             }
-            WorkerType::ReportList => {
+            WorkerType::GetReportList => {
                 serde_json::json!({
                     "reports": []
                 })
             }
-            WorkerType::VisionAnalysis => {
+            WorkerType::DescribeReport => {
                 serde_json::json!({
                     "description": "Sample description"
                 })
             }
-            WorkerType::Comparison => {
+            WorkerType::CompareReports => {
                 serde_json::json!({
                     "differences": []
                 })
             }
-            WorkerType::RagRetrieval => {
+            WorkerType::RagQuery => {
                 serde_json::json!({
                     "answer": "Sample answer"
                 })

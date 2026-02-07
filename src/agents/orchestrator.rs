@@ -207,11 +207,11 @@ impl Orchestrator {
                     .ok_or_else(|| anyhow::anyhow!("Missing worker_type"))?;
                 
                 let worker_type = match worker_type_str {
-                    "ObjectTree" | "OBJECT_TREE" => WorkerType::ObjectTree,
-                    "ReportList" | "REPORT_LIST" => WorkerType::ReportList,
-                    "VisionAnalysis" | "VISION_ANALYSIS" => WorkerType::VisionAnalysis,
-                    "Comparison" | "COMPARISON" => WorkerType::Comparison,
-                    "RagRetrieval" | "RAG_RETRIEVAL" => WorkerType::RagRetrieval,
+                    "ObjectTree" | "OBJECT_TREE" => WorkerType::GetObjectTree,
+                    "ReportList" | "REPORT_LIST" => WorkerType::GetReportList,
+                    "VisionAnalysis" | "VISION_ANALYSIS" => WorkerType::DescribeReport,
+                    "Comparison" | "COMPARISON" => WorkerType::CompareReports,
+                    "RagRetrieval" | "RAG_RETRIEVAL" => WorkerType::RagQuery,
                     _ => {
                         let msg = self.lang_manager.get_msg(lang, "error-unknown-worker");
                         return Err(anyhow::anyhow!(msg));

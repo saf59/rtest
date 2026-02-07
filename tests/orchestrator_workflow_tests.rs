@@ -37,7 +37,7 @@ async fn test_compare_workflow_step1_fetch_reports() -> Result<()> {
     // Should fetch report list
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
-            assert!(matches!(worker_req.worker_type, WorkerType::ReportList));
+            assert!(matches!(worker_req.worker_type, WorkerType::GetReportList));
         }
         _ => panic!("Expected ReportList worker execution"),
     }
@@ -66,7 +66,7 @@ async fn test_compare_workflow_step2_analyze_reports() -> Result<()> {
     
     // Step 2: ReportList worker has returned report IDs
     let report_list_response = ctx.create_worker_response(
-        WorkerType::ReportList,
+        WorkerType::GetReportList,
         WorkerStatus::Success,
         serde_json::json!({
             "reports": [
@@ -88,7 +88,7 @@ async fn test_compare_workflow_step2_analyze_reports() -> Result<()> {
     // Should now execute VisionAnalysis for reports
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
-            assert!(matches!(worker_req.worker_type, WorkerType::VisionAnalysis));
+            assert!(matches!(worker_req.worker_type, WorkerType::DescribeReport));
         }
         _ => panic!("Expected VisionAnalysis worker execution"),
     }
@@ -127,7 +127,7 @@ async fn test_describe_latest_workflow() -> Result<()> {
     
     match decision {
         OrchestratorDecision::ExecuteWorker(worker_req) => {
-            assert!(matches!(worker_req.worker_type, WorkerType::ReportList));
+            assert!(matches!(worker_req.worker_type, WorkerType::GetReportList));
         }
         _ => panic!("Expected ReportList worker to fetch latest"),
     }
@@ -156,7 +156,7 @@ async fn test_complete_workflow_format_and_return() -> Result<()> {
     
     // All workers completed successfully
     let vision_response = ctx.create_worker_response(
-        WorkerType::VisionAnalysis,
+        WorkerType::DescribeReport,
         WorkerStatus::Success,
         serde_json::json!({
             "description": "Foundation work at 80% completion..."
