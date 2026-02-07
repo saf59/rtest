@@ -20,7 +20,8 @@ async fn test_get_object_tree_no_missing_context() -> Result<()> {
             amount: None,
         }),
         None,
-        vec![ContextField::ObjectId,ContextField::CurrentReportId,ContextField::PreviousReportId], // No missing context
+        vec![], // No missing context
+        //vec![ContextField::ObjectId,ContextField::CurrentReportId,ContextField::PreviousReportId], // No missing context
     );
     
     let user_context = ctx.create_context(Language::English, None, None, None);

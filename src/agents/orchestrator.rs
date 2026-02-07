@@ -205,7 +205,55 @@ impl Orchestrator {
                 let worker_type_str = action_data["worker_type"]
                     .as_str()
                     .ok_or_else(|| anyhow::anyhow!("Missing worker_type"))?;
-                
+
+                let parameters = match worker_type_str {
+                    "GetObjectTree" | "GET_OBJECT_TREE" => {
+                        let task_params: TaskParameters = serde_json::from_value(
+                            action_data["parameters"]["task_params"].clone()
+                        )?;
+                        WorkerParameters::GetObjectTree(task_params)
+                    }
+                    "GetReportList" | "GET_REPORT_LIST" => {
+                        let object_id = action_data["parameters"]["object_id"]
+                            .as_str()
+                            .ok_or_else(|| anyhow::anyhow!("Missing object_id"))?
+                            .to_string();
+                        let task_params: TaskParameters = serde_json::from_value(
+                            action_data["parameters"]["task_params"].clone()
+                        )?;
+                        WorkerParameters::GetReportList { object_id, task_params }
+                    }
+                    "DescribeReport" | "DESCRIBE_REPORT" => {
+                        let report_id = action_data["parameters"]["report_id"]
+                            .as_str()
+                            .ok_or_else(|| anyhow::anyhow!("Missing report_id"))?
+                            .to_string();
+                        WorkerParameters::DescribeReport { report_id }
+                    }
+                    "CompareReports" | "COMPARE_REPORTS" => {
+                        let report_id_1 = action_data["parameters"]["report_id_1"]
+                            .as_str()
+                            .ok_or_else(|| anyhow::anyhow!("Missing report_id_1"))?
+                            .to_string();
+                        let report_id_2 = action_data["parameters"]["report_id_2"]
+                            .as_str()
+                            .ok_or_else(|| anyhow::anyhow!("Missing report_id_2"))?
+                            .to_string();
+                        WorkerParameters::CompareReports { report_id_1, report_id_2 }
+                    }
+                    "RagQuery" | "RAG_QUERY" => {
+                        let query = action_data["parameters"]["query"]
+                            .as_str()
+                            .ok_or_else(|| anyhow::anyhow!("Missing query"))?
+                            .to_string();
+                        WorkerParameters::RagQuery { query }
+                    }
+                    _ => {
+                        let msg = self.lang_manager.get_msg(lang, "error-unknown-worker");
+                        return Err(anyhow::anyhow!(msg));
+                    }
+                };
+
                 let worker_type = match worker_type_str {
                     "GetObjectTree" | "GET_OBJECT_TREE" => WorkerType::GetObjectTree,
                     "GetReportList" | "GET_REPORT_LIST" => WorkerType::GetReportList,
@@ -217,9 +265,7 @@ impl Orchestrator {
                         return Err(anyhow::anyhow!(msg));
                     }
                 };
-                
-                let parameters = serde_json::from_value(action_data["parameters"].clone())?;
-                
+
                 Ok(OrchestratorDecision::ExecuteWorker(WorkerRequest {
                     worker_type,
                     parameters,
