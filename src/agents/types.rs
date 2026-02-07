@@ -67,6 +67,7 @@ pub struct WorkerRequest {
     pub context: WorkerContext,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "chunk_type", content = "data")]
 pub enum WorkerParameters {
     GetObjectTree(TaskParameters),
     GetReportList {
@@ -143,6 +144,7 @@ pub enum OrchestratorDecision {
     },
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "chunk_type", content = "data")]
 pub enum WorkerType {
     GetObjectTree,
     GetReportList,
