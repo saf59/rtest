@@ -17,7 +17,7 @@ for %%m in (%MODELS%) do (
     cargo run --example warmup
     :: Групповой тест (заглушка)
     echo [TEST] Running group test for !TEST_MODEL!
-	cargo nextest run --no-fail-fast --test-threads=1 --test intent_router_basic_tests
+	cargo nextest run --test-threads=1 --test intent_router_basic_tests
 )
 
 echo.

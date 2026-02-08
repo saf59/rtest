@@ -26,7 +26,7 @@ for MODEL in "${MODELS[@]}"; do
 
     # Групповой тест (заглушка)
     echo "[TEST] Running group test for $TEST_MODEL..."
-	cargo nextest run --no-fail-fast --test-threads=1 --test intent_router_basic_tests
+	cargo nextest run --test-threads=1 --test intent_router_basic_tests
 done
 
 echo ""
