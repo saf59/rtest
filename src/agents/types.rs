@@ -23,15 +23,71 @@ pub enum Intent {
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExtractedParameters {
+    #[serde(deserialize_with = "deserialize_task_parameters_opt")]
     pub task_params: Option<TaskParameters>,
     pub object_identifier: Option<String>, // "Building A", "Site 123", etc.
     pub time_reference: Option<String>, // "last week", "yesterday", etc.
     pub report_references: Vec<String>, // "latest", "from Monday", etc.
 }
+
+/// Custom deserializer for Optional TaskParameters
+fn deserialize_task_parameters_opt<'de, D>(deserializer: D) -> Result<Option<TaskParameters>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let opt = Option::<serde_json::Value>::deserialize(deserializer)?;
+    match opt {
+        Some(v) => {
+            if v.is_null() {
+                Ok(None)
+            } else {
+                // Check if it's an empty object {}
+                if let serde_json::Value::Object(map) = &v {
+                    if map.is_empty() {
+                        return Ok(None);
+                    }
+                }
+                // Check if it's an object with all empty/default values
+                if let serde_json::Value::Object(map) = &v {
+                    let is_empty = map.get("period").map_or(true, |p| {
+                        p.is_null() || (p.is_string() && p.as_str().unwrap_or("").is_empty())
+                    }) && map.get("amount").map_or(true, |a| {
+                        a.is_null() || (a.is_number() && a.as_u64().unwrap_or(0) == 0)
+                    });
+                    if is_empty {
+                        return Ok(None);
+                    }
+                }
+                TaskParameters::deserialize(v).map(Some).map_err(|e| serde::de::Error::custom(e.to_string()))
+            }
+        }
+        None => Ok(None),
+    }
+}
+/// Custom deserializer for Period to handle empty strings as None
+fn deserialize_period_opt<'de, D>(deserializer: D) -> Result<Option<Period>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let opt = Option::<String>::deserialize(deserializer)?;
+    match opt {
+        Some(s) if s.is_empty() => Ok(None),
+        Some(s) => match s.as_str() {
+            "Day" => Ok(Some(Period::Day)),
+            "Week" => Ok(Some(Period::Week)),
+            "Month" => Ok(Some(Period::Month)),
+            "Quarter" => Ok(Some(Period::Quarter)),
+            _ => Err(serde::de::Error::unknown_variant(&s, &["Day", "Week", "Month", "Quarter"])),
+        },
+        None => Ok(None),
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TaskParameters {
     pub last: bool,
     pub all: bool,
+    #[serde(deserialize_with = "deserialize_period_opt")]
     pub period: Option<Period>,
     pub amount: Option<usize>,
 }

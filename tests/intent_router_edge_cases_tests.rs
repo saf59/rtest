@@ -102,7 +102,7 @@ async fn test_multiple_objects_mention() {
         )
         .await
         .expect("Classification failed");
-
+    tracing::info!("Result: {:?}", &result);
     // Should extract multiple object identifiers
     assert!(result.extracted_parameters.object_identifier.is_some());
 }

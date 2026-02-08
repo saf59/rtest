@@ -54,7 +54,7 @@ async fn test_out_of_scope_news() {
         .classify("Tell me the latest news", &user_context, &[])
         .await
         .expect("Classification failed");
-
+    tracing::info!("Classification result: {:?}", result);
     assert!(matches!(result.intent, Intent::OutOfScope));
 }
 
