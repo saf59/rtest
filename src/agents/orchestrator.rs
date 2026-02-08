@@ -277,26 +277,49 @@ impl Orchestrator {
                 }))
             }
             "RequestContextFromUser" => {
-                let missing_field_str = action_data["missing_field"]
-                    .as_str()
-                    .ok_or_else(|| anyhow::anyhow!("Missing missing_field"))?;
-                
-                let missing_field = match missing_field_str {
-                    "ObjectId" | "OBJECT_ID" => ContextField::ObjectId,
-                    "CurrentReportId" | "CURRENT_REPORT_ID" => ContextField::CurrentReportId,
-                    "PreviousReportId" | "PREVIOUS_REPORT_ID" => ContextField::PreviousReportId,
-                    _ => {
-                        let msg = self.lang_manager.get_msg(lang, "error-unknown-context-field");
-                        return Err(anyhow::anyhow!(format!("{}:{}",msg,missing_field_str)));
+                let missing_field_raw = &action_data["missing_field"];
+                let missing_field: ContextField = if missing_field_raw.is_string() {
+                    // Handle comma-separated string like "ObjectId,CurrentReportId"
+                    let s = missing_field_raw.as_str().unwrap_or("");
+                    if s.is_empty() {
+                        return Err(anyhow::anyhow!("Empty missing_field"));
                     }
+                    // Take the first field from comma-separated list
+                    let first_field = s.split(',')
+                        .next()
+                        .unwrap_or("");
+                    match first_field.trim() {
+                        "ObjectId" | "OBJECT_ID" => ContextField::ObjectId,
+                        "CurrentReportId" | "CURRENT_REPORT_ID" => ContextField::CurrentReportId,
+                        "PreviousReportId" | "PREVIOUS_REPORT_ID" => ContextField::PreviousReportId,
+                        _ => {
+                            let msg = self.lang_manager.get_msg(lang, "error-unknown-context-field");
+                            return Err(anyhow::anyhow!(format!("{}:{}",msg,first_field)));
+                        }
+                    }
+                } else if missing_field_raw.is_array() {
+                    // Handle array format - take first element
+                    let arr = match missing_field_raw.as_array() {
+                        Some(a) if !a.is_empty() => a,
+                        _ => return Err(anyhow::anyhow!("Empty or invalid missing_field array")),
+                    };
+                    let s = arr[0].as_str().unwrap_or("");
+                    match s {
+                        "ObjectId" => ContextField::ObjectId,
+                        "CurrentReportId" => ContextField::CurrentReportId,
+                        "PreviousReportId" => ContextField::PreviousReportId,
+                        _ => return Err(anyhow::anyhow!("Unknown context field: {}", s)),
+                    }
+                } else {
+                    return Err(anyhow::anyhow!("Missing missing_field"));
                 };
-                
+
                 let default_prompt = match missing_field {
                     ContextField::ObjectId => self.lang_manager.get_msg(lang, "context-request-object-id"),
                     ContextField::CurrentReportId => self.lang_manager.get_msg(lang, "context-request-current-report"),
                     ContextField::PreviousReportId => self.lang_manager.get_msg(lang, "context-request-previous-report"),
                 };
-                
+
                 Ok(OrchestratorDecision::RequestContextFromUser {
                     missing_field,
                     prompt: action_data["prompt"]

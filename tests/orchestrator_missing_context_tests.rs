@@ -37,7 +37,7 @@ async fn test_report_list_missing_object_id() -> Result<()> {
         }
         _ => panic!("Expected RequestContextFromUser for missing object_id"),
     }
-    
+
     Ok(())
 }
 
@@ -98,7 +98,7 @@ async fn test_describe_report_missing_both_ids() -> Result<()> {
     let decision = ctx.orchestrator
         .decide_next_step(&classification, &user_context, "describe the report", &[])
         .await?;
-    
+    tracing::info!("Decision for DescribeReport with missing object_id and report_id: {:?}", decision);
     // Should request object_id first (highest priority)
     match decision {
         OrchestratorDecision::RequestContextFromUser { missing_field, .. } => {
