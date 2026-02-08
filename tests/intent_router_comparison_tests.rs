@@ -36,7 +36,7 @@ async fn test_compare_last_two_reports() {
         .expect("Classification failed");
     tracing::info!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::CompareReports));
-    assert!(result.extracted_parameters.report_references.iter().any(|n:&String| n.contains("last two")));
+    assert!(result.extracted_parameters.time_reference.iter().any(|n:&String| n.contains("last two")));
     let params = result.extracted_parameters.task_params
         .expect("Task params should be present");
     assert_eq!(params.amount, Some(2));

@@ -5,7 +5,8 @@ set RUST_LOG=error
 set RUSTFLAGS=-A warnings
 
 :: Массив моделей для тестирования
-set MODELS=qwen3:14b qwen3-vl deepseek-r1:14b ministral-3:14b gemma3:12b minicpm-v:8b llava llama3.2-vision llava-llama3:latest functiongemma adelnazmy2002/Qwen3-VL-4B-Instruct:Q8_0
+set MODELS_=qwen3:14b qwen3-vl deepseek-r1:14b ministral-3:14b gemma3:12b minicpm-v:8b llava llama3.2-vision llava-llama3:latest functiongemma adelnazmy2002/Qwen3-VL-4B-Instruct:Q8_0
+set MODELS=qwen3:14b ministral-3:14b adelnazmy2002/Qwen3-VL-4B-Instruct:Q8_0
 
 for %%m in (%MODELS%) do (
     echo.
