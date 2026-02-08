@@ -18,7 +18,7 @@ MODELS=(
 for MODEL in "${MODELS[@]}"; do
     echo ""
     echo "Testing model: $MODEL"
-    export TEST_MODEL="$MODEL"
+    export OLLAMA_MODEL="$MODEL"
 
     # Разогрев модели (заглушка)
     echo "[WARMUP] Running warmup test for $TEST_MODEL..."

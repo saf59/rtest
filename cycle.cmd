@@ -10,7 +10,7 @@ set MODELS=qwen3:14b qwen3-vl deepseek-r1:14b ministral-3:14b gemma3:12b minicpm
 for %%m in (%MODELS%) do (
     echo.
     echo Testing model: %%m
-    set TEST_MODEL=%%m
+    set OLLAMA_MODEL=%%m
 
     :: Разогрев модели (заглушка)
     echo [WARMUP] Running warmup test for !TEST_MODEL!
