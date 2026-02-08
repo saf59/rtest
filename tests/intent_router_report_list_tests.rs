@@ -7,12 +7,12 @@ use rig_test::agents::types::*;
 async fn test_get_report_list_missing_context() {
     let ctx = TestContext::new();
     let user_context = ctx.create_context("user-123", Language::English, None, None, None);
-    println!("User_context: {:#?}",&user_context);
+    tracing::info!("User_context: {:#?}",&user_context);
     let result:ClassificationResult  = ctx.intent_router
         .classify("Show me photo reports", &user_context, &Vec::<String>::new())
         .await
         .expect("Classification failed");
-    println!("Classification result: {:#?}", result);
+    tracing::info!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::GetReportList));
     // *** object_identifier: Some("".to_string()), TODO remove empty string
     assert!(result.missing_context.contains(&ContextField::ObjectId));

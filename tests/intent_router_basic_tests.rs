@@ -13,13 +13,14 @@ async fn test_get_object_tree_all_objects() {
         .classify("Show me all buildings", &user_context, &[])
         .await
         .expect("Classification failed");
-
+    tracing::info!("Classification result: {:#?}", result);
     assert!(matches!(result.intent, Intent::GetObjectTree));
     assert!(result.confidence > 0.7);
 
     // Check task parameters
     let params = result.extracted_parameters.task_params
         .expect("Task params should be present");
+    tracing::info!("Extracted task parameters: {:#?}", params);
     assert_eq!(params.all, true);
     assert_eq!(params.last, false);
     assert!(result.missing_context.is_empty());

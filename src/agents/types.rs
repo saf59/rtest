@@ -48,13 +48,18 @@ where
                     }
                 }
                 // Check if it's an object with all empty/default values
+                // Note: we must also check 'all' and 'last' fields - they are not defaults!
                 if let serde_json::Value::Object(map) = &v {
-                    let is_empty = map.get("period").map_or(true, |p| {
+                    let has_no_meaningful_data = map.get("period").map_or(true, |p| {
                         p.is_null() || (p.is_string() && p.as_str().unwrap_or("").is_empty())
                     }) && map.get("amount").map_or(true, |a| {
                         a.is_null() || (a.is_number() && a.as_u64().unwrap_or(0) == 0)
+                    }) && map.get("all").map_or(true, |a| {
+                        a.is_null() || !a.is_boolean() || !a.as_bool().unwrap_or(false)
+                    }) && map.get("last").map_or(true, |l| {
+                        l.is_null() || !l.is_boolean() || !l.as_bool().unwrap_or(false)
                     });
-                    if is_empty {
+                    if has_no_meaningful_data {
                         return Ok(None);
                     }
                 }
