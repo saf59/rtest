@@ -2,10 +2,14 @@
 
 # Массив моделей для тестирования
 MODELS=(
-    "qwen3:14b"
+    "mistral-nemo"
+)
+
+MODELS_=(
+    "qwen3:14b" +
     "qwen3-vl"
     "deepseek-r1:14b"
-    "ministral-3:14b"
+    "ministral-3:14b" *
     "gemma3:12b"
     "minicpm-v:8b"
     "llava"
@@ -13,7 +17,12 @@ MODELS=(
     "llava-llama3:latest"
     "functiongemma"
     "adelnazmy2002/Qwen3-VL-4B-Instruct:Q8_0"
+    "qwen3:8b"
+    "mistral-nemo"
 )
+
+export RUSTFLAGS="-A warnings"
+export RUST_LOG="error"
 
 for MODEL in "${MODELS[@]}"; do
     echo ""
@@ -26,7 +35,7 @@ for MODEL in "${MODELS[@]}"; do
 
     # Групповой тест (заглушка)
     echo "[TEST] Running group test for $TEST_MODEL..."
-	cargo nextest run --test-threads=1 --test intent_router_basic_tests
+	cargo nextest run --no-fail-fast --test-threads=1 --test intent_router_basic_tests
 done
 
 echo ""
