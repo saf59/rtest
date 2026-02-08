@@ -2,28 +2,19 @@
 setlocal enabledelayedexpansion
 
 :: Массив моделей для тестирования
-set MODELS=gpt-4o gpt-4o-mini claude-3-5-sonnet claude-3-opus
+set MODELS=qwen3:14b qwen3-vl deepseek-r1:14b ministral-3:14b gemma3:12b minicpm-v:8b llava llama3.2-vision llava-llama3:latest functiongemma adelnazmy2002/Qwen3-VL-4B-Instruct:Q8_0
 
-:: Количество итераций
-set ITERATIONS=3
-
-echo === Start cycle tests ===
-
-for /L %%i in (1,1,%ITERATIONS%) do (
+for %%m in (%MODELS%) do (
     echo.
-    echo --- Iteration %%i of %ITERATIONS% ---
+    echo Testing model: %%m
+    set TEST_MODEL=%%m
 
-    for %%m in (%MODELS%) do (
-        echo.
-        echo Testing model: %%m
-        set TEST_MODEL=%%m
-
-        :: Разогрев модели (заглушка)
-        echo [WARMUP] Running warmup test for !TEST_MODEL!
-
-        :: Групповой тест (заглушка)
-        echo [TEST] Running group test for !TEST_MODEL!
-    )
+    :: Разогрев модели (заглушка)
+    echo [WARMUP] Running warmup test for !TEST_MODEL!
+    cargo run --example warmup
+    :: Групповой тест (заглушка)
+    echo [TEST] Running group test for !TEST_MODEL!
+	cargo nextest run --no-fail-fast --test-threads=1 --test intent_router_basic_tests
 )
 
 echo.

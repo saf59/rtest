@@ -33,8 +33,8 @@ impl ResponseFormatter {
         };
         
         tracing::info!("Creating Response Formatter with Ollama API: {}", ollama_api_url);
-
-        let client = client(false);
+        let is_local = std::env::var("OLLAMA_LOCAL").unwrap_or( "false".to_string()) == "true";
+        let client = client(is_local);
         
         Self {
             client,

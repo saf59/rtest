@@ -20,8 +20,8 @@ impl OrchestratorTestContext {
             .try_init();
         let api_base = std::env::var("OLLAMA_API_BASE")
             .unwrap_or_else(|_| "http://localhost:11434".to_string());
-        let model = "qwen3:14b".to_string();
-        
+        let model = std::env::var("OLLAMA_MODEL").unwrap_or("qwen3:14b".to_string());
+
         let orchestrator = Orchestrator::new(
             api_base,
             model,

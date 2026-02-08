@@ -1,6 +1,7 @@
 // tests/common/mod.rs
 
 use std::sync::Arc;
+use fluent_syntax::parser::Slice;
 use rig_test::agents::intent_router::IntentRouter;
 use rig_test::agents::types::*;
 use rig_test::localization::LocalizationManager;
@@ -26,8 +27,8 @@ impl TestContext {
         // Use Ollama with FunctionGemma
         let api_base = std::env::var("OLLAMA_API_BASE")
             .unwrap_or_else(|_| "http://localhost:11434".to_string());
-        let model = "qwen3:14b".to_string();
         //let model =    "functiongemma:latest".to_string();
+        let model = std::env::var("OLLAMA_MODEL").unwrap_or("qwen3:14b".to_string());
 
         let intent_router = IntentRouter::new(
             api_base,

@@ -25,8 +25,8 @@ impl Orchestrator {
         template_manager: Arc<TemplateManager>,
     ) -> Self {
         tracing::info!("Creating Orchestrator");
-
-        let client = client(false);
+        let is_local = std::env::var("OLLAMA_LOCAL").unwrap_or( "false".to_string()) == "true";
+        let client = client(is_local);
         
         Self {
             client,
@@ -287,7 +287,7 @@ impl Orchestrator {
                     "PreviousReportId" | "PREVIOUS_REPORT_ID" => ContextField::PreviousReportId,
                     _ => {
                         let msg = self.lang_manager.get_msg(lang, "error-unknown-context-field");
-                        return Err(anyhow::anyhow!(msg));
+                        return Err(anyhow::anyhow!(format!("{}:{}",msg,missing_field_str)));
                     }
                 };
                 

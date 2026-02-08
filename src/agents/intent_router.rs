@@ -27,7 +27,8 @@ impl IntentRouter {
         lang_manager: Arc<LocalizationManager>,
         template_manager: Arc<TemplateManager>,
     ) -> Self {
-        let client = client(false);
+        let is_local = std::env::var("OLLAMA_LOCAL").unwrap_or( "false".to_string()) == "true";
+        let client = client(is_local);
 
         Self {
             client,
