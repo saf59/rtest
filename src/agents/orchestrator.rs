@@ -19,7 +19,7 @@ pub struct Orchestrator {
 
 impl Orchestrator {
     pub fn new(
-        api_base: String,
+        _api_base: String,
         model: String,
         lang_manager: Arc<LocalizationManager>,
         template_manager: Arc<TemplateManager>,
@@ -81,7 +81,7 @@ impl Orchestrator {
                 e, cleaned, response
             ))?;
         
-        self.parse_decision(decision_json, lang, context)
+        self.parse_decision(decision_json, lang, context, worker_results)
     }
     
     /// Clean JSON response
@@ -186,6 +186,7 @@ impl Orchestrator {
         json: serde_json::Value,
         lang: &str,
         context: &UserContext,
+        worker_results: &[WorkerResponse],
     ) -> Result<OrchestratorDecision> {
         let decision_type = json["decision"]
             .as_str()
@@ -348,7 +349,7 @@ impl Orchestrator {
                     .to_string(),
             }),
             "FormatAndReturn" => Ok(OrchestratorDecision::FormatAndReturn {
-                worker_results: vec![], // Will be filled by caller
+                worker_results: worker_results.to_vec(),
             }),
             "Reject" => Ok(OrchestratorDecision::Reject {
                 reason: action_data["reason"]

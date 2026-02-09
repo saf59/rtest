@@ -1,7 +1,6 @@
 // tests/common/mod.rs
 
 use std::sync::Arc;
-use fluent_syntax::parser::Slice;
 use rig_test::agents::intent_router::IntentRouter;
 use rig_test::agents::types::*;
 use rig_test::localization::LocalizationManager;

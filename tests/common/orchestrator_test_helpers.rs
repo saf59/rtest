@@ -1,10 +1,8 @@
-
-use std::sync::Arc;
-use anyhow::Result;
 use rig_test::agents::orchestrator::Orchestrator;
 use rig_test::agents::types::*;
 use rig_test::localization::LocalizationManager;
 use rig_test::templating::TemplateManager;
+use std::sync::Arc;
 
 pub struct OrchestratorTestContext {
     pub orchestrator: Orchestrator,

@@ -8,11 +8,12 @@ use serde_json::json;
 #[error("App error")]
 pub struct CXError;
 
+// This impl is intentionally unused - CXError is a simple marker type
+// and doesn't need error conversion from Box<dyn StdError>
 impl From<Box<dyn StdError + Send + Sync + 'static>> for CXError {
     #[inline(always)]
-    fn from(b: Box<dyn StdError + Send + Sync + 'static>) -> Self {
-        //b // both sides are the same type
-        b.into()
+    fn from(_b: Box<dyn StdError + Send + Sync + 'static>) -> Self {
+        CXError
     }
 }
 

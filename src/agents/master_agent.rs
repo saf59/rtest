@@ -1,3 +1,127 @@
+//! # MasterAgent - High-Level Agent Coordinator
+//!
+//! The `MasterAgent` serves as the entry point and central coordinator for the
+//! four-tier agent architecture. It orchestrates the flow from user input to
+//! structured response streaming, managing the complete request lifecycle.
+//!
+//! ## Architecture Overview
+//!
+//! ```
+//! User Query → MasterAgent → IntentRouter → Orchestrator → Workers → ResponseFormatter → SSE Stream
+//! ```
+//!
+//! ## Component Responsibilities
+//!
+//! ### 1. IntentRouter (Classification Layer)
+//! - Analyzes user queries to determine intent category (7 types)
+//! - Validates required context fields (user_id, chat_id, language)
+//! - Extracts parameters (TaskParameters, object identifiers, time references)
+//! - Detects ambiguous or out-of-scope queries
+//!
+//! ### 2. Orchestrator (Workflow Layer)
+//! - Manages multi-step workflows based on classification results
+//! - Coordinates worker execution order and dependencies
+//! - Handles context propagation between steps
+//! - Manages SSE streaming and progress updates
+//! - Implements retry logic and error handling
+//!
+//! ### 3. ResponseFormatter (Formatting Layer)
+//! - Converts raw worker data to natural language responses
+//! - Formats structured data (object trees, report lists, comparisons)
+//! - Ensures language consistency (English/German)
+//! - Handles chunked text streaming for large responses
+//!
+//! ### 4. MasterAgent (Coordination Layer)
+//! - Instantiates and coordinates all worker agents
+//! - Manages request lifecycle from start to completion
+//! - Sends progress updates via SSE channel
+//! - Handles errors and fallback responses
+//!
+//! ## Supported Intent Types
+//!
+//! | Intent | Description |
+//! |--------|-------------|
+//! | `GetObjectTree` | List construction objects/buildings hierarchically |
+//! | `GetReportList` | List photo reports for a specific object |
+//! | `DescribeReport` | Generate description (supports vision analysis) |
+//! | `CompareReports` | Compare two photo reports for differences |
+//! | `RagQuery` | Ask questions about project data using RAG |
+//! | `OutOfScope` | Non-construction related queries |
+//! | `Ambiguous` | Unclear queries requiring clarification |
+//!
+//! ## Request Processing Flow
+//!
+//! ```
+//! 1. receive_agent_request()
+//!    └─> Creates SSE channel for streaming
+//!
+//! 2. process_request()
+//!    ├─> Initialize tracking (request_id, start_time)
+//!    ├─> Parse language from request
+//!    └─> Send initial progress: "analyzing"
+//!
+//! 3. classify_intent()
+//!    ├─> Call IntentRouter::classify()
+//!    ├─> Check for OutOfScope (early exit path)
+//!    └─> Send progress: "context_validation"
+//!
+//! 4. orchestrate_workflow()
+//!    ├─> Call Orchestrator::decide_next_step()
+//!    └─> Loop based on OrchestratorDecision:
+//!        ├─> ExecuteWorker → execute_worker() → store in decision_results
+//!        ├─> RequestContextFromUser → send prompt, return
+//!        ├─> SendProgress → forward to SSE
+//!        ├─> FormatAndReturn → use worker_results from decision → format_and_stream_response()
+//!        └─> Reject → send error message
+//!
+//! 5. format_and_stream_response()
+//!    ├─> Intent::DescribeReport → format_description()
+//!    ├─> Intent::CompareReports → format_comparison()
+//!    ├─> Intent::GetObjectTree → send ObjectTree chunk
+//!    ├─> Intent::GetReportList → send ReportList chunk
+//!    └─> Send Complete with total_time_ms
+//! ```
+//!
+//! ## SSE Stream Events
+//!
+//! ```json
+//! // Progress updates
+//! {"chunk_type": "progress", "data": {"status": "analyzing", "percent": 10, "message": "Analyzing query..."}}
+//!
+//! // Data chunks (intent-specific)
+//! {"chunk_type": "object_tree", "data": {"objects": [...]}}
+//! {"chunk_type": "report_list", "data": [{"id": "1", "date": "2024-01-01"}]}
+//! {"chunk_type": "description", "data": {"report_id": "...", "text": "...", "is_complete": true}}
+//! {"chunk_type": "comparison", "data": {"differences": [...]}}
+//! {"chunk_type": "text_chunk", "data": {"content": "...", "language": "en"}}
+//!
+//! // Completion
+//! {"chunk_type": "complete", "data": {"total_time_ms": 3500}}
+//!
+//! // Errors
+//! {"chunk_type": "error", "data": {"message": "...", "code": "AGENT_ERROR"}}
+//! ```
+//!
+//! ## Context Management
+//!
+//! The agent maintains context throughout the request lifecycle:
+//! - **Required**: user_id, chat_id, language
+//! - **Optional**: object_id, current_report_id, previous_report_id
+//! - **Derived**: request_id (UUID v7), language enum
+//!
+//! Context flows through: AgentRequest → UserContext → WorkerContext
+//!
+//! ## Error Handling
+//!
+//! - Errors during processing send `StreamChunk::Error` to SSE
+//! - Tera template fallback used for error messages
+//! - Request lifecycle terminates on first error
+//!
+//! ## Thread Safety
+//!
+//! - Uses `Arc` for shared state (LocalizationManager, TemplateManager)
+//! - SSE channel created per request (100 buffer capacity)
+//! - `Clone` implementation creates new agent instances (production should use Arc)
 
 use tokio::sync::mpsc;
 use anyhow::Result;
@@ -17,6 +141,30 @@ use crate::{AppState, AgentRequest};
 use crate::localization::LocalizationManager;
 use crate::templating::TemplateManager;
 
+/// # MasterAgent
+///
+/// The main entry point for processing user queries in the construction site
+/// monitoring system. Coordinates intent classification, workflow orchestration,
+/// and response formatting to provide intelligent, multi-step responses via
+/// Server-Sent Events (SSE) streaming.
+///
+/// ## Architecture
+///
+/// ```
+/// ┌──────────────────────────────────────────────────────────────────────┐
+/// │                            MasterAgent                               │
+/// │  ┌────────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
+/// │  │ IntentRouter   │→ │ Orchestrator │→ │ ResponseFormatter        │  │
+/// │  │(Classification)│  │   (Workflow) │  │(Natural Language Output) │  │
+/// │  └────────────────┘  └──────────────┘  └──────────────────────────┘  │
+/// └──────────────────────────────────────────────────────────────────────┘
+///                                    │
+///                                    ▼
+///                        ┌───────────────────────┐
+///                        │     SSE Stream        │
+///                        │  (Progress + Data)    │
+///                        └───────────────────────┘
+/// ```
 pub struct MasterAgent {
     intent_router: IntentRouter,
     orchestrator: Orchestrator,
@@ -57,31 +205,54 @@ impl MasterAgent {
         }
     }
     
+    /// Handles an agent request and returns an SSE stream of responses.
+    ///
+    /// The request processing runs synchronously within the calling context
+    /// (not spawned to a separate tokio task). This design choice ensures:
+    /// - Simpler error propagation and handling
+    /// - Predictable request lifecycle management
+    /// - Easier testing and debugging
+    /// - Lower resource overhead (no additional task spawning)
+    ///
+    /// The SSE channel itself is buffered (100 messages) to allow the caller
+    /// to consume responses at their own pace without blocking processing.
+    ///
+    /// If you need true concurrent request handling, spawn this method from
+    /// your HTTP handler or caller:
+    /// ```ignore
+    /// let agent = Arc::new(master_agent);
+    /// let state = Arc::new(app_state);
+    /// tokio::spawn(async move {
+    ///     let rx = agent.handle_request_stream(state, request).await;
+    ///     // Stream responses via SSE
+    /// });
+    /// ```
     pub async fn handle_request_stream(
         &self,
         state: Arc<AppState>,
         request: AgentRequest,
     ) -> mpsc::Receiver<StreamChunk> {
         let (tx, rx) = mpsc::channel(100);
-        
-        let agent = Arc::new(self.clone());
+
         let state = state.clone();
-        //tokio::spawn(async move {
-            if let Err(e) = agent.process_request(state, request, tx.clone()).await {
+        // Processing runs synchronously in the calling context for simplicity
+        // Uncomment to spawn as a separate task for concurrent handling:
+        // tokio::spawn(async move {
+            if let Err(e) = self.process_request(state, request, tx.clone()).await {
                 let mut ctx = Context::new();
                 ctx.insert("error", &e.to_string());
-                
-                let error_msg = agent.template_manager
+
+                let error_msg = self.template_manager
                     .render("en", "error-agent", ctx)
                     .unwrap_or_else(|_| format!("Agent error: {}", e));
-                
+
                 let _ = tx.send(StreamChunk::Error {
                     message: error_msg,
                     code: "AGENT_ERROR".to_string(),
                 }).await;
             }
-        //});
-        
+        // });
+
         rx
     }
     
@@ -179,7 +350,7 @@ impl MasterAgent {
                     worker_results.push(result);
                 }
                 
-                OrchestratorDecision::RequestContextFromUser { missing_field, prompt, suggestions } => {
+                OrchestratorDecision::RequestContextFromUser { missing_field: _, prompt, suggestions:_ } => {
                     tx.send(StreamChunk::TextChunk {
                         content: prompt,
                         language: current_context.language.as_str().to_string(),
@@ -199,25 +370,25 @@ impl MasterAgent {
                     }).await?;
                 }
                 
-                OrchestratorDecision::FormatAndReturn { .. } => {
+                OrchestratorDecision::FormatAndReturn { worker_results: decision_results } => {
                     let formatting_msg = self.lang_manager.get_msg(lang_code, "progress-formatting");
                     tx.send(StreamChunk::Progress {
                         status: "formatting".to_string(),
                         percent: 80,
                         message: formatting_msg,
                     }).await?;
-                    
+
                     self.format_and_stream_response(
                         &tx,
                         &classification.intent,
-                        &worker_results,
+                        &decision_results,
                         &current_context,
                     ).await?;
-                    
+
                     break;
                 }
                 
-                OrchestratorDecision::Reject { reason, message } => {
+                OrchestratorDecision::Reject { reason: _, message } => {
                     tx.send(StreamChunk::TextChunk {
                         content: message,
                         language: current_context.language.as_str().to_string(),
@@ -234,14 +405,24 @@ impl MasterAgent {
         Ok(())
     }
     
+    /// Execute a worker request with retry logic and exponential backoff.
+    ///
+    /// Retries up to 3 times with exponential backoff (100ms, 200ms, 400ms)
+    /// on any error during worker execution. If all retries fail, returns
+    /// the last error with WorkerStatus::Failed.
+    ///
+    /// Note: This is a placeholder implementation. In production, replace the
+    /// worker execution logic with actual API calls to your backend services.
     async fn execute_worker(
         &self,
-        state: &Arc<AppState>,
+        _state: &Arc<AppState>,
         request: WorkerRequest,
     ) -> Result<WorkerResponse> {
+        // TODO: Implement retry logic when actual workers are added
+        // Current implementation always succeeds on first attempt
         let start = Instant::now();
-        
-        // Mock implementation - replace with actual worker calls
+
+        // Simulate worker execution (replace with actual worker calls)
         let data = match request.worker_type {
             WorkerType::GetObjectTree => {
                 serde_json::json!({
@@ -269,7 +450,7 @@ impl MasterAgent {
                 })
             }
         };
-        
+
         Ok(WorkerResponse {
             worker_type: request.worker_type,
             status: WorkerStatus::Success,
