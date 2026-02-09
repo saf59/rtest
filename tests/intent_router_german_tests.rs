@@ -57,7 +57,7 @@ async fn test_german_describe_report() {
 }
 
 #[tokio::test]
-async fn test_german_compare_reports() {
+async fn test_german_compare_two_reports() {
     let ctx = TestContext::new();
     let user_context = ctx.create_context(
         "user-123",

@@ -34,6 +34,7 @@ progress-formatting = Formatiere Antwort...
 context-request-object-id = Welches Gebäude oder welche Baustelle möchten Sie bearbeiten?
 context-request-current-report = Welchen Fotobericht möchten Sie analysieren?
 context-request-previous-report = Mit welchem vorherigen Bericht möchten Sie vergleichen?
+context-request-clarification = Ich bin mir nicht sicher, was Sie meinen. Könnten Sie das bitte klarstellen?
 
 # UI Messages
 status-not-set = NICHT GESETZT
@@ -46,10 +47,19 @@ worker-result-summary = {$worker_type}: {$status} ({$execution_time}ms)
 error-serialization = Serialisierungsfehler: {$error}
 error-agent = Agentenfehler: {$error}
 error-classification = Klassifizierungsergebnis konnte nicht geparst werden: {$error}
+error-classification-fallback = Klassifizierungsergebnis konnte nicht geparst werden: {$error}
 error-unknown-decision = Unbekannter Entscheidungstyp: {$decision_type}
 error-missing-field = Fehlendes Feld {$field}
 error-unknown-worker = Unbekannter Worker-Typ
 error-unknown-context-field = Unbekanntes Kontextfeld
+error-unknown-decision-type = Unbekannter Entscheidungstyp: {$decision_type}
+error-empty-report-id = report_id darf nicht leer sein
+
+# Orchestrator Messages
+orchestrator-cannot-process = Cannot process this request
+
+# Response Formatter Messages
+error-comparison-parse = Failed to parse comparison: {$error}
 
 # General Messages
 analyzing-query = Analysiere Anfrage

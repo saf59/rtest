@@ -249,7 +249,7 @@ impl Orchestrator {
 
                         if report_id.is_empty() {
                             return Err(anyhow::anyhow!(
-                                "report_id cannot be empty"
+                                self.lang_manager.get_msg(lang, "error-empty-report-id")
                             ));
                         }
                         WorkerParameters::DescribeReport { report_id }
@@ -266,7 +266,7 @@ impl Orchestrator {
 
                         if report_id_1.is_empty() || report_id_2.is_empty() {
                             return Err(anyhow::anyhow!(
-                                "report_id cannot be empty"
+                                self.lang_manager.get_msg(lang, "error-empty-report-id")
                             ));
                         }
                         WorkerParameters::CompareReports { report_id_1, report_id_2 }
@@ -395,7 +395,7 @@ impl Orchestrator {
                 ctx.insert("decision_type", decision_type);
                 let msg = self.template_manager
                     .render(lang, "error-unknown-decision", ctx)
-                    .unwrap_or_else(|_| format!("Unknown decision type: {}", decision_type));
+                    .unwrap_or_else(|_| self.lang_manager.get_msg(lang, "error-unknown-decision-type"));
                 Err(anyhow::anyhow!(msg))
             }
         }

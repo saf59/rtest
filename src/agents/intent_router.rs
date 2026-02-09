@@ -77,7 +77,7 @@ impl IntentRouter {
                 ctx.insert("error", &e.to_string());
                 let error_msg = self.template_manager
                     .render(lang, "error-classification", ctx)
-                    .unwrap_or_else(|_| format!("Failed to parse classification result: {}", e));
+                    .unwrap_or_else(|_| self.lang_manager.get_msg(lang, "error-classification-fallback"));
                 anyhow::anyhow!("{}\nResponse was: {}", error_msg, response)
             })?;
 

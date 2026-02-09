@@ -124,13 +124,14 @@ impl ResponseFormatter {
         tracing::info!("Formatter comparison response:\n{}", response);
         
         let cleaned = self.clean_json_response(&response);
-        
+
+        let error_msg = self.lang_manager.get_msg(lang, "error-comparison-parse");
         let comparison: serde_json::Value = serde_json::from_str(&cleaned)
             .map_err(|e| anyhow::anyhow!(
-                "Failed to parse comparison: {}\nCleaned: {}\nOriginal: {}",
-                e, cleaned, response
+                "{}\nCleaned: {}\nOriginal: {}\nError: {}",
+                error_msg, cleaned, response, e
             ))?;
-        
+
         Ok(comparison)
     }
     

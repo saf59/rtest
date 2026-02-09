@@ -60,6 +60,8 @@ async fn test_request_context_with_suggestions() -> Result<()> {
         .decide_next_step(&classification, &user_context, "show reports for Building A", &[])
         .await?;
 
+    tracing::info!("Decision for missing object_id with suggestions: {:?}", decision);
+
     match decision {
         OrchestratorDecision::RequestContextFromUser { prompt, suggestions, .. } => {
             assert!(prompt.len() > 0);
@@ -205,7 +207,7 @@ async fn test_ambiguous_intent_requests_clarification() -> Result<()> {
     let decision = ctx.orchestrator
         .decide_next_step(&classification, &user_context, "show me something", &[])
         .await?;
-
+    tracing::info!("Decision for Ambiguous intent: {:?}", decision);
     // Should request clarification for ambiguous intent
     match decision {
         OrchestratorDecision::RequestContextFromUser { prompt, suggestions, .. } => {
