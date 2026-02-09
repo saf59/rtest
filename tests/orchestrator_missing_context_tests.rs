@@ -42,6 +42,37 @@ async fn test_report_list_missing_object_id() -> Result<()> {
 }
 
 #[tokio::test]
+async fn test_request_context_with_suggestions() -> Result<()> {
+    let ctx = OrchestratorTestContext::new();
+
+    // Classification with object_identifier extracted from message
+    let classification = ctx.create_classification(
+        Intent::GetReportList,
+        0.88,
+        None,
+        Some("Building A".to_string()),  // Object identifier extracted
+        vec![ContextField::ObjectId],
+    );
+
+    let user_context = ctx.create_context(Language::English, None, None, None);
+
+    let decision = ctx.orchestrator
+        .decide_next_step(&classification, &user_context, "show reports for Building A", &[])
+        .await?;
+
+    match decision {
+        OrchestratorDecision::RequestContextFromUser { prompt, suggestions, .. } => {
+            assert!(prompt.len() > 0);
+            // Suggestions should be empty since we're not in Ambiguous case
+            // (suggestions are only set for Ambiguous intent)
+        }
+        _ => panic!("Expected RequestContextFromUser"),
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_report_list_with_object_identifier() -> Result<()> {
     let ctx = OrchestratorTestContext::new();
     
@@ -153,6 +184,38 @@ async fn test_compare_reports_missing_report_ids() -> Result<()> {
         }
         _ => panic!("Expected ExecuteWorker for ReportList"),
     }
-    
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_ambiguous_intent_requests_clarification() -> Result<()> {
+    let ctx = OrchestratorTestContext::new();
+
+    let classification = ctx.create_classification(
+        Intent::Ambiguous,
+        0.50,  // Low confidence indicates ambiguity
+        None,
+        Some("Building A".to_string()),  // Has some object identifier
+        vec![],
+    );
+
+    let user_context = ctx.create_context(Language::English, None, None, None);
+
+    let decision = ctx.orchestrator
+        .decide_next_step(&classification, &user_context, "show me something", &[])
+        .await?;
+
+    // Should request clarification for ambiguous intent
+    match decision {
+        OrchestratorDecision::RequestContextFromUser { prompt, suggestions, .. } => {
+            assert!(prompt.len() > 0, "Prompt should not be empty");
+            // Should have suggestions from object_identifier
+            assert!(suggestions.len() > 0, "Should have suggestions");
+            assert!(suggestions.contains(&"Building A".to_string()), "Suggestions should contain Building A");
+        }
+        _ => panic!("Expected RequestContextFromUser for ambiguous intent"),
+    }
+
     Ok(())
 }

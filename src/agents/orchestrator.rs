@@ -5,6 +5,7 @@ use anyhow::Result;
 use tera::Context;
 use rig::client::CompletionClient;
 use std::sync::Arc;
+use uuid::Uuid;
 use crate::helper::client;
 use super::types::*;
 use crate::localization::LocalizationManager;
@@ -45,7 +46,22 @@ impl Orchestrator {
         worker_results: &[WorkerResponse],
     ) -> Result<OrchestratorDecision> {
         let lang = context.language.to_code();
-        
+
+        // Handle Ambiguous intent - request clarification from user
+        if matches!(classification.intent, Intent::Ambiguous) {
+            let prompt = self.lang_manager.get_msg(lang, "context-request-clarification");
+            // Use extracted object_identifier as suggestions if available
+            let suggestions = classification.extracted_parameters.object_identifier
+                .clone()
+                .map(|s| vec![s])
+                .unwrap_or_default();
+            return Ok(OrchestratorDecision::RequestContextFromUser {
+                missing_field: ContextField::CurrentReportId, // Dummy value to trigger user request
+                prompt,
+                suggestions,
+            });
+        }
+
         // Get system prompt
         let system_prompt = self.lang_manager
             .get_prompt(lang, "orchestrator-system-prompt")?;
@@ -198,9 +214,10 @@ impl Orchestrator {
                     .unwrap_or_else(|_| "Missing decision field".to_string());
                 anyhow::anyhow!(msg)
             })?;
-        
+
         let action_data = &json["action_data"];
-        
+        let request_id = Uuid::now_v7().to_string();
+
         match decision_type {
             "ExecuteWorker" => {
                 let worker_type_str = action_data["worker_type"]
@@ -229,6 +246,12 @@ impl Orchestrator {
                             .as_str()
                             .ok_or_else(|| anyhow::anyhow!("Missing report_id"))?
                             .to_string();
+
+                        if report_id.is_empty() {
+                            return Err(anyhow::anyhow!(
+                                "report_id cannot be empty"
+                            ));
+                        }
                         WorkerParameters::DescribeReport { report_id }
                     }
                     "CompareReports" | "COMPARE_REPORTS" => {
@@ -240,6 +263,12 @@ impl Orchestrator {
                             .as_str()
                             .ok_or_else(|| anyhow::anyhow!("Missing report_id_2"))?
                             .to_string();
+
+                        if report_id_1.is_empty() || report_id_2.is_empty() {
+                            return Err(anyhow::anyhow!(
+                                "report_id cannot be empty"
+                            ));
+                        }
                         WorkerParameters::CompareReports { report_id_1, report_id_2 }
                     }
                     "RagQuery" | "RAG_QUERY" => {
@@ -273,7 +302,7 @@ impl Orchestrator {
                     context: WorkerContext {
                         user_id: context.user_id.clone(),
                         language: context.language.clone(),
-                        request_id: String::new(), // Will be filled by caller
+                        request_id,
                     },
                 }))
             }

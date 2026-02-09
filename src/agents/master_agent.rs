@@ -263,7 +263,7 @@ impl MasterAgent {
         tx: mpsc::Sender<StreamChunk>,
     ) -> Result<()> {
         let start_time = Instant::now();
-        let request_id = Uuid::now_v7().to_string();
+        let _request_id = Uuid::now_v7().to_string();
         
         let lang = Language::from_short(&request.language);
         let lang_code = lang.to_code();
@@ -332,8 +332,8 @@ impl MasterAgent {
                 OrchestratorDecision::ExecuteWorker(mut worker_req) => {
                     worker_req.context.user_id = current_context.user_id.clone();
                     worker_req.context.language = current_context.language.clone();
-                    worker_req.context.request_id = request_id.clone();
-                    
+                    // request_id is already set by orchestrator
+
                     let mut ctx = Context::new();
                     ctx.insert("worker_type", &format!("{:?}", worker_req.worker_type));
                     let executing_msg = self.template_manager
@@ -350,9 +350,15 @@ impl MasterAgent {
                     worker_results.push(result);
                 }
                 
-                OrchestratorDecision::RequestContextFromUser { missing_field: _, prompt, suggestions:_ } => {
+                OrchestratorDecision::RequestContextFromUser { missing_field: _, prompt, suggestions } => {
+                    // Include suggestions in the prompt if available
+                    let prompt_with_suggestions = if !suggestions.is_empty() {
+                        format!("{} Suggestions: {}", prompt, suggestions.join(", "))
+                    } else {
+                        prompt
+                    };
                     tx.send(StreamChunk::TextChunk {
-                        content: prompt,
+                        content: prompt_with_suggestions,
                         language: current_context.language.as_str().to_string(),
                     }).await?;
                     
