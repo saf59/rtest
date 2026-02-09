@@ -203,7 +203,7 @@ pub enum OrchestratorDecision {
         message: String,
     },
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 //#[serde(tag = "chunk_type", content = "data")]
 pub enum WorkerType {
     GetObjectTree,
@@ -228,7 +228,7 @@ pub struct WorkerResponse {
     pub metadata: WorkerMetadata,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum WorkerStatus {
     Success,
     PartialSuccess,

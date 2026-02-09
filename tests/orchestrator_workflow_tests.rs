@@ -186,11 +186,13 @@ async fn test_complete_workflow_format_and_return() -> Result<()> {
             &[vision_response],
         )
         .await?;
-    
-    // Should be ready to format and return
+    tracing::info!("Final decision: {:?}", decision);
+    // Should be ready to format and return with worker results from orchestrator
     match decision {
         OrchestratorDecision::FormatAndReturn { worker_results } => {
-            assert_eq!(worker_results.len(), 0); // Will be filled by caller
+            assert_eq!(worker_results.len(), 1, "worker_results should contain results from previous workers");
+            assert_eq!(worker_results[0].worker_type, WorkerType::DescribeReport);
+            assert_eq!(worker_results[0].status, WorkerStatus::Success);
         }
         _ => panic!("Expected FormatAndReturn decision"),
     }
