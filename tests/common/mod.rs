@@ -21,7 +21,7 @@ impl TestContext {
         let lang_manager = Arc::new(LocalizationManager::new());
         let template_manager = Arc::new(TemplateManager::new());
         let _ = tracing_subscriber::fmt()
-            .with_test_writer() // Специальный писатель для тестов
+            .with_test_writer()
             .try_init();
         // Use Ollama with FunctionGemma
         let api_base = std::env::var("OLLAMA_API_BASE")
