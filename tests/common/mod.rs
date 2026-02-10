@@ -1,4 +1,4 @@
-// tests/common/mod.rs
+#![allow(unused)]
 
 use std::sync::Arc;
 use rig_test::agents::intent_router::IntentRouter;

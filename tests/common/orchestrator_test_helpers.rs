@@ -1,3 +1,4 @@
+#![allow(unused)]
 use rig_test::agents::orchestrator::Orchestrator;
 use rig_test::agents::types::*;
 use rig_test::localization::LocalizationManager;

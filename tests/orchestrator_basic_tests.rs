@@ -113,7 +113,7 @@ async fn test_out_of_scope_immediate_reject() -> Result<()> {
     
     // Should reject immediately for out of scope
     match decision {
-        OrchestratorDecision::Reject { reason, message } => {
+        OrchestratorDecision::Reject { reason:_, message } => {
             assert!(message.len() > 0);
         }
         _ => panic!("Expected Reject decision for out of scope"),

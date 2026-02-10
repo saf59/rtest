@@ -1,3 +1,4 @@
+#![allow(unused)]
 use rig_test::agents::response_formatter::ResponseFormatter;
 use rig_test::localization::LocalizationManager;
 use rig_test::templating::TemplateManager;

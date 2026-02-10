@@ -31,7 +31,7 @@ async fn test_report_list_missing_object_id() -> Result<()> {
     
     // Should request object_id from user
     match decision {
-        OrchestratorDecision::RequestContextFromUser { missing_field, prompt, suggestions } => {
+        OrchestratorDecision::RequestContextFromUser { missing_field, prompt, suggestions:_ } => {
             assert!(matches!(missing_field, ContextField::ObjectId));
             assert!(prompt.len() > 0);
         }
@@ -63,7 +63,7 @@ async fn test_request_context_with_suggestions() -> Result<()> {
     tracing::info!("Decision for missing object_id with suggestions: {:?}", decision);
 
     match decision {
-        OrchestratorDecision::RequestContextFromUser { prompt, suggestions, .. } => {
+        OrchestratorDecision::RequestContextFromUser { prompt, suggestions:_, .. } => {
             assert!(prompt.len() > 0);
             // Suggestions should be empty since we're not in Ambiguous case
             // (suggestions are only set for Ambiguous intent)
@@ -102,7 +102,7 @@ async fn test_report_list_with_object_identifier() -> Result<()> {
     // In real implementation, this might trigger a search worker
     // For now, should still request clarification
     match decision {
-        OrchestratorDecision::RequestContextFromUser { missing_field, prompt, .. } => {
+        OrchestratorDecision::RequestContextFromUser { missing_field, prompt:_, .. } => {
             assert!(matches!(missing_field, ContextField::ObjectId));
         }
         OrchestratorDecision::ExecuteWorker(_) => {
