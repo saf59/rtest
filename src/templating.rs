@@ -11,7 +11,6 @@ const TEMPLATE_FILES: &[(&str, &str)] = &[
 ];
 
 pub struct TemplateManager {
-    //lang_manager: Arc<crate::localization::LocalizationManager>,
     tera_templates: HashMap<String, HashMap<String, String>>, // lang -> template_id -> content
 }
 impl Default for TemplateManager {

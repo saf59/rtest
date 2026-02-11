@@ -16,7 +16,7 @@
 //! 3. classify_intent()
 //!    ├─> Call IntentRouter::classify()
 //!    ├─> Check for OutOfScope (early exit path)
-//!    └─> Send progress: "context_validation"
+//!    └─> Send progress
 //!
 //! 4. orchestrate_workflow()
 //!    ├─> Call Orchestrator::decide_next_step()
@@ -64,21 +64,11 @@
 //!
 //! Context flows through: AgentRequest → UserContext → WorkerContext
 //!
-//! TODO (Architecture Alignment):
-//! - plan.md specifies explicit required context validation step before routing.
-//!   Current implementation assumes required fields are present.
-//! - Missing explicit access control validation (user_id ↔ object/report ownership).
-//! - No persistent conversation memory layer (chat-based memory store).
-//!
 //! ## Error Handling
 //!
 //! - Errors during processing send `StreamChunk::Error` to SSE
 //! - Tera template fallback used for error messages
 //! - Request lifecycle terminates on first error
-//!
-//! TODO (Architecture Alignment):
-//! - plan.md describes granular error categorization (DB error, image error,
-//!   validation error, etc.). Current implementation collapses all into AGENT_ERROR.
 //!
 //! ## Thread Safety
 //!
@@ -87,7 +77,7 @@
 //! - `Clone` implementation creates new agent instances (production should use Arc)
 //!
 //! TODO (Performance Alignment):
-//! - plan.md recommends caching layers (ObjectTree, ReportList, Image Description).
+//! - caching layers (ObjectTree, ReportList, Image Description).
 //!   No caching mechanism is implemented here.
 
 use tokio::sync::mpsc;
@@ -134,15 +124,15 @@ use crate::templating::TemplateManager;
 /// ```
 ///
 /// TODO (Architecture Gap):
-/// - plan.md specifies Rejection Handler as a specialized worker.
+/// - Rejection Handler as a specialized worker.
 ///   Here, rejection is handled inline via OrchestratorDecision::Reject.
-/// - plan.md includes Knowledge Base Worker (RAG) as a first-class worker.
+/// - Knowledge Base Worker (RAG) as a first-class worker.
 ///   RagQuery worker_type exists but is not fully formatted downstream.
 /// - No Evaluator/Compliance agent layer for quality control.
 pub struct MasterAgent {
-    intent_router: IntentRouter,
-    orchestrator: Orchestrator,
-    formatter: ResponseFormatter,
+    intent_router: Arc<IntentRouter>,      // ← Оборачиваем в Arc
+    orchestrator: Arc<Orchestrator>,        // ← Оборачиваем в Arc
+    formatter: Arc<ResponseFormatter>,      // ← Оборачиваем в Arc
     lang_manager: Arc<LocalizationManager>,
     template_manager: Arc<TemplateManager>,
 }
@@ -156,33 +146,33 @@ impl MasterAgent {
         template_manager: Arc<TemplateManager>,
     ) -> Self {
         Self {
-            intent_router: IntentRouter::new(
+            intent_router: Arc::new(IntentRouter::new(
                 api_base.clone(),
                 chat_model.clone(),
                 lang_manager.clone(),
                 template_manager.clone(),
-            ),
-            orchestrator: Orchestrator::new(
+            )),
+            orchestrator: Arc::new(Orchestrator::new(
                 api_base.clone(),
                 text_model.clone(),
                 lang_manager.clone(),
                 template_manager.clone(),
-            ),
-            formatter: ResponseFormatter::new(
+            )),
+            formatter: Arc::new(ResponseFormatter::new(
                 api_base,
                 text_model,
                 lang_manager.clone(),
                 template_manager.clone(),
-            ),
+            )),
             lang_manager,
             template_manager,
         }
     }
-    
+
     /// Handles an agent request and returns an SSE stream of responses.
     ///
     /// TODO (Scalability):
-    /// - plan.md suggests streaming progress percentages aligned to workflow phases.
+    /// - streaming progress percentages aligned to workflow phases.
     ///   Current percentages are static (10, 30, 50, 80).
     /// - No backpressure monitoring on channel capacity.
     pub async fn handle_request_stream(
@@ -192,16 +182,28 @@ impl MasterAgent {
     ) -> mpsc::Receiver<StreamChunk> {
         let (tx, rx) = mpsc::channel(100);
 
+        // Клонируем Arc-ссылки (дешево!)
+        let intent_router = self.intent_router.clone();
+        let orchestrator = self.orchestrator.clone();
+        let formatter = self.formatter.clone();
+        let lang_manager = self.lang_manager.clone();
+        let template_manager = self.template_manager.clone();
         let state = state.clone();
-        // TODO (Concurrency):
-        // plan.md allows scalable independent worker execution.
-        // Current implementation is strictly sequential.
-        // tokio::spawn(async move {
-            if let Err(e) = self.process_request(state, request, tx.clone()).await {
+
+        tokio::spawn(async move {
+            let agent = MasterAgent {
+                intent_router,
+                orchestrator,
+                formatter,
+                lang_manager: lang_manager.clone(),
+                template_manager: template_manager.clone(),
+            };
+
+            if let Err(e) = agent.process_request(state, request, tx.clone()).await {
                 let mut ctx = Context::new();
                 ctx.insert("error", &e.to_string());
 
-                let error_msg = self.template_manager
+                let error_msg = template_manager
                     .render("en", "error-agent", ctx)
                     .unwrap_or_else(|_| format!("Agent error: {}", e));
 
@@ -210,11 +212,11 @@ impl MasterAgent {
                     code: "AGENT_ERROR".to_string(),
                 }).await;
             }
-        // });
+        });
 
         rx
     }
-    
+
     async fn process_request(
         &self,
         state: Arc<AppState>,
@@ -225,7 +227,7 @@ impl MasterAgent {
         let _request_id = Uuid::now_v7().to_string();
         
         // TODO: request_id generated but never propagated to workers or logs.
-        // plan.md recommends request tracing for debugging and observability.
+        // request tracing for debugging and observability.
         
         let lang = Language::from_short(&request.language);
         let lang_code = lang.to_code();
@@ -246,19 +248,12 @@ impl MasterAgent {
             previous_report_id: request.prev_leaf.clone(),
         };
         
-        // TODO (Validation Gap):
-        // plan.md explicitly defines required context validation step.
-        // No validation is performed here for:
-        // - empty user_id
-        // - invalid object_id
-        // - invalid report_id combination
-        
         let classification = self.intent_router
             .classify(&request.message, &context, &[])
             .await?;
         
         // TODO (Ambiguity Gap):
-        // plan.md defines Intent::Ambiguous handling path.
+        // Intent::Ambiguous handling path.
         // No explicit branch for Intent::Ambiguous here.
         
         if matches!(classification.intent, Intent::OutOfScope) {
@@ -300,10 +295,6 @@ impl MasterAgent {
                     worker_req.context.user_id = current_context.user_id.clone();
                     worker_req.context.language = current_context.language.clone();
                     
-                    // TODO (Security Gap):
-                    // plan.md defines access control flow (user ownership validation).
-                    // No verification that user owns object/report before execution.
-
                     let mut ctx = Context::new();
                     ctx.insert("worker_type", &format!("{:?}", worker_req.worker_type));
                     let executing_msg = self.template_manager
@@ -322,7 +313,7 @@ impl MasterAgent {
                 
                 OrchestratorDecision::RequestContextFromUser { missing_field: _, prompt, suggestions } => {
                     // TODO:
-                    // plan.md suggests structured clarification flow.
+                    // structured clarification flow.
                     // Current implementation concatenates suggestions as plain text.
                     
                     let prompt_with_suggestions = if !suggestions.is_empty() {
@@ -385,7 +376,6 @@ impl MasterAgent {
     }
     
     /// TODO (Worker Gap):
-    /// - plan.md defines specialized workers (DB, S3, RAG).
     /// - Current implementation is stubbed with mock JSON.
     /// - No retry logic implemented despite documentation claim.
     async fn execute_worker(
@@ -495,7 +485,7 @@ impl MasterAgent {
             
             // TODO:
             // Missing explicit handling for Intent::RagQuery.
-            // plan.md specifies Knowledge Base Worker with citation support.
+            // Knowledge Base Worker with citation support.
             // Also missing fallback handling for Ambiguous intent.
             
             _ => {}
@@ -511,7 +501,7 @@ impl MasterAgent {
         language: &Language,
     ) -> Result<()> {
         // TODO:
-        // plan.md suggests chunk streaming by semantic units.
+        // chunk streaming by semantic units.
         // Current implementation splits by ". " which is naive
         // and may break abbreviations or non-English punctuation.
         
@@ -534,40 +524,12 @@ impl MasterAgent {
 
 impl Clone for MasterAgent {
     fn clone(&self) -> Self {
-        // TODO:
-        // plan.md recommends scalability and independent worker scaling.
-        // This clone reconstructs full agents instead of sharing via Arc.
-        // Consider wrapping IntentRouter/Orchestrator/Formatter in Arc.
-        
-        let lang_manager = self.lang_manager.clone();
-        let template_manager = self.template_manager.clone();
-        
-        let api_base = std::env::var("OLLAMA_API_BASE")
-            .unwrap_or_else(|_| "http://localhost:11434".to_string());
-        let text_model = std::env::var("OLLAMA_MODEL")
-            .unwrap_or_else(|_| "functiongemma:latest".to_string());
-        
         Self {
-            intent_router: IntentRouter::new(
-                api_base.clone(),
-                text_model.clone(),
-                lang_manager.clone(),
-                template_manager.clone(),
-            ),
-            orchestrator: Orchestrator::new(
-                api_base.clone(),
-                text_model.clone(),
-                lang_manager.clone(),
-                template_manager.clone(),
-            ),
-            formatter: ResponseFormatter::new(
-                api_base,
-                text_model,
-                lang_manager.clone(),
-                template_manager.clone(),
-            ),
-            lang_manager,
-            template_manager,
+            intent_router: self.intent_router.clone(),
+            orchestrator: self.orchestrator.clone(),
+            formatter: self.formatter.clone(),
+            lang_manager: self.lang_manager.clone(),
+            template_manager: self.template_manager.clone(),
         }
     }
 }
